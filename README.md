@@ -113,14 +113,17 @@ Alternative configuration files can also be used: ../Configurations/RTApp-ADCSim
     
 ### Start open browser and explore MARTe2 App Objects
 
-[MARTe2 App ](http://efda-marte.ipfn.tecnico.ulisboa.pt:8084)
+[MARTe2 HTTP local server ](http://localhost:8084)
 
 
 ### Change RT App State to RUN  (to store Data), and get back to IDLE
 
 Open a new terminal shell and run:  
-`caput ISTTOK:central:MARTe2-Command 1`
-`caput ISTTOK:central:MARTe2-Command 0`
+```console
+$ caput ISTTOK:central:MARTe2-Command 1
+(wait)
+$ caput ISTTOK:central:MARTe2-Command 0
+```
 
 
 
