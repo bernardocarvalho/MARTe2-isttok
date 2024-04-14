@@ -19,7 +19,7 @@ Install all the standard development tools, the cmake compiler:
 `sudo apt-get install -y build-essential git cmake`  
 `sudo apt-get install -y libncurses-dev`
 
-Solve dependencies for MARTe2 and EPICS:
+Solve dependencies for MARTe2 and EPICS:  
 `sudo apt-get install -y libreadline-dev re2c`
 
 Install MDSplus
@@ -30,15 +30,12 @@ See (https://www.mdsplus.org/index.php/Latest_Ubuntu/Debian_Packages)
 
 Create a folder (e.g. named xxx in home) and clone MARTe2 Core,  MARTe2 components and the MARTe2 isttok repo:
 
-`mkdir ~/xxx`
-  
-`cd ~/xxx`
+`mkdir ~/xxx`  
+`cd ~/xxx`  
 
-`git clone https://vcis-gitlab.f4e.europa.eu/aneto/MARTe2.git MARTe2-dev`
-
-`git clone https://vcis-gitlab.f4e.europa.eu/aneto/MARTe2-components.git`
-
-`git clone https://github.com/bernardocarvalho/MARTe2-isttok`
+`git clone https://vcis-gitlab.f4e.europa.eu/aneto/MARTe2.git MARTe2-dev`  
+`git clone https://vcis-gitlab.f4e.europa.eu/aneto/MARTe2-components.git`  
+`git clone https://github.com/bernardocarvalho/MARTe2-isttok`  
       
 Download EPICS R7:
 
@@ -48,10 +45,8 @@ Download EPICS R7:
 
 Compile EPICS:
 
-`cd ~/xxx/epics-base`
-
-`echo "OP_SYS_CXXFLAGS += -std=c++11" >> configure/os/CONFIG_SITE.linux-x86_64.Common`
-
+`cd ~/xxx/epics-base`  
+`echo "OP_SYS_CXXFLAGS += -std=c++11" >> configure/os/CONFIG_SITE.linux-x86_64.Common`  
 `make`
 
 ## Compiling MARTe, EPICS, and the examples
@@ -92,7 +87,7 @@ Make sure that all the environment variables are correctly exported.
 
 Open a new terminal shell and start the [EPICS](https://epics-controls.org) IOC server:
 
-`cd ~/xxx/MARTe2-isttok`
+`cd ~/xxx/MARTe2-isttok`  
 `softIoc -d Configurations/EPICS-isttok.db`
 
 ### Start MARTe2 
@@ -101,9 +96,8 @@ Open a new terminal shell and launch the MARTe2 application
 
 `cd ~/xxx/MARTe2-isttok/Startup`
 
-Startup git:(isttok-marte-dac) 
+Startup MARTe2 RT App  
 `./AtcaIop.sh -l RealTimeLoader -f ../Configurations/RTApp-AtcaIop.cfg -m StateMachine:START`
-
 
    Would should see a bunch of logger messaged. Last list should be:
 
@@ -124,9 +118,8 @@ Alternative configuration files can also be used: ../Configurations/RTApp-ADCSim
 
 ### Change RT App State to RUN  (to store Data), and get back to IDLE
 
-Open a new terminal shell and run:
+Open a new terminal shell and run:  
 `caput ISTTOK:central:MARTe2-Command 1`
-
 `caput ISTTOK:central:MARTe2-Command 0`
 
 
