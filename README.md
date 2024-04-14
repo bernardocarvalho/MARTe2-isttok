@@ -10,13 +10,13 @@ See instructions in (https://vcis-gitlab.f4e.europa.eu/aneto/MARTe2-demos-padova
 
 ### Download all the needed software
 
-Open a terminal, 
-`sudo apt update`
+Open a terminal,  
+`sudo apt update`  
 `sudo apt upgrade`
 
 Install all the standard development tools, the cmake compiler:
 
-`sudo apt-get install -y build-essential git cmake`
+`sudo apt-get install -y build-essential git cmake`  
 `sudo apt-get install -y libncurses-dev`
 
 Solve dependencies for MARTe2 and EPICS:
