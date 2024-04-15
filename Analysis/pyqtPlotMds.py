@@ -12,7 +12,7 @@ from pyqtgraph.Qt import QtCore
 from MDSplus import Tree
 import argparse
 
-app = pg.mkQApp("Plotting MARTe2 Data")
+app = pg.mkQApp("Plotting MARTe2 AtcaIop Data")
 #mw = QtWidgets.QMainWindow()
 #mw.resize(800,800)
 
@@ -24,10 +24,10 @@ parser = argparse.ArgumentParser(description = 'Script to support the QA activit
 
     #parser.add_argument('-l','--list', nargs='+', help='<Required> Set flag', required=True)
     #parser.add_argument('-l','--list', nargs='+')
-parser.add_argument('-c', '--crange', nargs='+',type=int, help='Channel lines (0 4 )',default=[0, 4])
-parser.add_argument('-i', '--irange', nargs='+',type=int,default=[0, 4])
+parser.add_argument('-c', '--crange', nargs='+',type=int, help='Channel plots (1 12)',default=[1, 8])
+parser.add_argument('-i', '--irange', nargs='+',type=int,default=[1, 8])
 #parser.add_argument('pulse','-', nargs='+', help='<Required> Set flag', required=True)
-parser.add_argument('-s', '--shot', type=int, help='Mds+ pulse Number ([0, ...])', default=100)
+parser.add_argument('-s', '--shot', type=int, help='Mds+ pulse Number ([1, ...])', default=100)
 parser.add_argument('-m', '--maxsamples', type=int, help='Max samples to plot', default=50000)
 parser.add_argument('-z', '--zero', action='store_true',help='Zero integral Lines') #, default='')
 
@@ -48,10 +48,6 @@ except:
     print(f'Failed opening {mdsTreeName} for pulse number {mdsPulseNumber:d}')
     exit()
 
-#time = dataCsv['#Time (uint32)[1]']
-#timeRel = time - time[0]
-#x = DECIM_RATE * np.arange(len(vals))
-
 win = pg.GraphicsLayoutWidget(show=True, title="Basic plotting examples")
 win.resize(1000,600)
 win.setWindowTitle('pyqtgraph example: Plotting')
@@ -65,21 +61,25 @@ mdsNode = tree.getNode("ATCAIOP1.ADC0RAW")
 dataAdc = mdsNode.getData().data()
 timeData = mdsNode.getDimensionAt(0).data()
 p1.addLegend()
-for i in range(args.crange[0], args.crange[1]):
+start = args.crange[0] -1; stop = args.crange[1] - 1
+#for i in range(args.crange[0], args.crange[1]):
+for i in range(start, stop):
     mdsNode = tree.getNode(f"ATCAIOP1.ADC{i}RAW")
     dataAdc = mdsNode.getData().data()
     timeData = mdsNode.getDimensionAt(0).data()
     #y = dataAdc[ :args.maxsamples, 0]
     y = dataAdc[ :MAX_SAMPLES, 0]
     x = DECIM_RATE * np.arange(len(y)) / 2.0e6
-    p1.plot(x,y, pen=pg.mkPen(i, width=2), name=f"Ch {i}")
+    p1.plot(x,y, pen=pg.mkPen(i, width=2), name=f"Ch {i+1}")
 #p1.setLabel('bottom', "Y Axis", units='s')
 
 win.nextRow()
 p4 = win.addPlot(title="ATCA Integral Channels")
 p4.addLegend()
 #for i in range(8,12):
-for i in range(args.irange[0], args.irange[1]):
+start = args.irange[0] -1; stop = args.irange[1] - 1
+for i in range(start, stop):
+#for i in range(args.irange[0], args.irange[1]):
     mdsNode = tree.getNode(f"ATCAIOP1.ADC{i}INT")
     dataAdcInt = mdsNode.getData().data()
     timeData = mdsNode.getDimensionAt(0).data()
@@ -88,7 +88,7 @@ for i in range(args.irange[0], args.irange[1]):
         y = y - dataAdcInt[0, 0]
     #x = DECIM_RATE * np.arange(len(y))
     x = DECIM_RATE * np.arange(len(y)) / 2.0e6
-    p4.plot(x,y, pen=pg.mkPen(i, width=2), name=f"Ch {i}")
+    p4.plot(x,y, pen=pg.mkPen(i, width=2), name=f"Ch {i+1}")
 
 p4.setLabel('bottom', "Time", units='s')
 
