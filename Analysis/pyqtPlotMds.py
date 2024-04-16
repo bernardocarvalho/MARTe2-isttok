@@ -71,20 +71,25 @@ p4 = win.addPlot(title="Channel Integrals")
 p4.addLegend()
 #for i in range(8,12):
 start = args.irange[0] -1; stop = args.irange[1] - 1
+print("WO: ", end='')
 for i in range(start, stop):
     #mdsNode = tree.getNode(f"ATCAIOP1.ADC8INT")
     mdsNode = tree.getNode(f"ATCAIOP1.ADC{i}INT")
     try:
-        #print(f"ATCAIOP1.ADC{i:d}INT")
-        dataAdcInt = mdsNode.getData().data() / 2.0e6 #  LSB * sec
+        dataAdcInt = mdsNode.getData().data()
         timeData = mdsNode.getDimensionAt(0).data()
-        y = dataAdcInt[ :args.maxsamples, 0]
+        total_samples = DECIM_RATE * len(dataAdcInt[:, 0])
+        y = dataAdcInt[ :args.maxsamples, 0]  / 2.0e6 #  LSB * sec
         if(args.zero):
-            y = y - dataAdcInt[0, 0]
+            y = y - dataAdcInt[0, 0] / 2.0e6 #  LSB * sec
+            wo =  (dataAdcInt[-1, 0] - dataAdcInt[0, 0]) /total_samples
+            print(f"{wo:0.4f} ", end='')
         x = DECIM_RATE * np.arange(len(y)) / 2.0e6 # in sec
         p4.plot(x,y, pen=pg.mkPen(i, width=2), name=f"Ch {i+1}")
     except:
         print(f"No data ATCAIOP1.ADC{i:d}INT")
+
+print(" ")
 
 p4.setLabel('bottom', "Time", units='s')
 

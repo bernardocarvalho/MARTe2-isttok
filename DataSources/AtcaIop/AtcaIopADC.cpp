@@ -409,7 +409,8 @@ bool AtcaIopADC::SetConfiguredDatabase(StructuredDataI& data) {
     }
     for (i=0u; i < ATCA_IOP_N_ADCs ; i++) {
         eo_conf.offset[i] = electricalOffsets[i];
-        wo_conf.offset[i] = wiringOffsets[i];
+        wo_conf.offset[i] = static_cast<int32>(wiringOffsets[i] * 65536);
+        REPORT_ERROR(ErrorManagement::Information, "WiringOffset %d: %d", i, wo_conf.offset[i]);
     }
     rc = ioctl(boardFileDescriptor, ATCA_PCIE_IOPS_EO_OFFSETS, &eo_conf);
     rc = ioctl(boardFileDescriptor, ATCA_PCIE_IOPS_WO_OFFSETS, &wo_conf);
