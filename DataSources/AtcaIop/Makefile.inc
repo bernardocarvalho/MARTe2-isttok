@@ -22,7 +22,7 @@
 #
 #############################################################
 
-OBJSX=AtcaIopDAC.x AtcaIopADC.x
+OBJSX=AtcaIopDAC.x AtcaIopADC.x AtcaIopConfigEoWo.x
 
 PACKAGE=Components/DataSources
 
