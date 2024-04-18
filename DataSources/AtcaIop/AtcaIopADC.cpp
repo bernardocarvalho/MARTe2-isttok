@@ -40,6 +40,7 @@
 #include "AtcaIopADC.h"
 #include "atca-v6-iop-ioctl.h"
 
+#define DEBUG_POLL 1
 /*---------------------------------------------------------------------------*/
 /*                           Static definitions                              */
 /*---------------------------------------------------------------------------*/
@@ -77,9 +78,9 @@ struct atca_wo_config {
 /*---------------------------------------------------------------------------*/
 AtcaIopADC::AtcaIopADC() :
         DataSourceI(), MessageI(), EmbeddedServiceMethodBinderI(), executor(*this) {
-    //boardId = 2u;
     deviceName = "";
-    deviceDmaName = "";
+    boardId = 2u;
+    //deviceDmaName = "";
     boardFileDescriptor = -1;
     boardDmaDescriptor = -1;
     mappedDmaBase = NULL;
@@ -93,6 +94,8 @@ AtcaIopADC::AtcaIopADC() :
     counterAndTimer[1] = 0u;
     sleepNature = Busy;
     sleepPercentage = 0u;
+    execCounter = 0u;
+    pollTimout = 0u;
     adcPeriod = 0.;
     uint32 k;
     for (k=0u; k<ATCA_IOP_N_ADCs; k++) {
@@ -154,11 +157,19 @@ bool AtcaIopADC::Initialise(StructuredDataI& data) {
         }
     }
     if (ok) {
+        ok = data.Read("BoardId", boardId);
+        if (!ok) {
+            REPORT_ERROR(ErrorManagement::ParametersError, "The BoardId shall be specified");
+        }
+    }
+    /*
+    if (ok) {
         ok = data.Read("DeviceDmaName", deviceDmaName);
         if (!ok) {
             REPORT_ERROR(ErrorManagement::ParametersError, "The DeviceDmaName shall be specified");
         }
     }
+    */
     if (ok) {
         ok = data.Read("NumberOfChannels", numberOfChannels);
         if (!ok) {
@@ -343,7 +354,8 @@ bool AtcaIopADC::SetConfiguredDatabase(StructuredDataI& data) {
     StreamString fullDeviceName;
     //Configure the board
     if (ok) {
-        ok = fullDeviceName.Printf("%s", deviceName.Buffer());
+        ok = fullDeviceName.Printf("%s_%d", deviceName.Buffer(), boardId);
+        //ok = fullDeviceName.Printf("%s", deviceName.Buffer());
     }
     if (ok) {
         ok = fullDeviceName.Seek(0LLU);
@@ -359,7 +371,8 @@ bool AtcaIopADC::SetConfiguredDatabase(StructuredDataI& data) {
     }
     ok = fullDeviceName.Seek(0LLU);
     if (ok) {
-        ok = fullDeviceName.Printf("%s", deviceDmaName.Buffer());
+        ok = fullDeviceName.Printf("%s_dmart_%d", deviceName.Buffer(), boardId);
+        //ok = fullDeviceName.Printf("%s", deviceName.Buffer());
     }
     if (ok) {
         ok = fullDeviceName.Seek(0LLU);
@@ -538,6 +551,10 @@ bool AtcaIopADC::SetConfiguredDatabase(StructuredDataI& data) {
         timerPeriodUsecTime = static_cast<uint32>(periodUsec);
         float64 sleepTimeT = (static_cast<float64>(HighResolutionTimer::Frequency()) / cycleFrequency);
         sleepTimeTicks = static_cast<uint64>(sleepTimeT);
+/*
+ * [Information - AtcaIopADC.cpp:548]: The timer will be set using a cycle frequency of 10000.000000 Hz
+ * [Information - AtcaIopADC.cpp:554]: The timer will be set using a sleepTimeTicks of 100000 (ns)
+ */
         REPORT_ERROR(ErrorManagement::Information,
                 "The timer will be set using a sleepTimeTicks of %d (ns)", sleepTimeTicks);
     }
@@ -613,6 +630,9 @@ bool AtcaIopADC::PrepareNextState(const char8* const currentStateName, const cha
         ok = executor.Start();
         REPORT_ERROR(ErrorManagement::Information, "Executor Start");
     }
+    if (executor.GetStatus() == EmbeddedThreadI::RunningState) {
+        REPORT_ERROR(ErrorManagement::Information, " ADC currentStateName   %s, nextStateName %s", currentStateName, nextStateName);
+    }
     counterAndTimer[0] = 0u;
     //counterAndTimer[1] = 0u;
     return ok;
@@ -638,19 +658,32 @@ ErrorManagement::ErrorType AtcaIopADC::Execute(ExecutionInfo& info) {
     uint64 deltaTicks = sleepTimeTicks - sleepTicksCorrection;
     //volatile int32 currentDMA = 0u;
     oldestBufferIdx = GetOldestBufferIdx();
+    float32 totalSleepTime = static_cast<float32>(static_cast<float64>(deltaTicks) * HighResolutionTimer::Period());
+#ifdef DEBUG_POLL    
+    if((execCounter++)%4096 == 0) {
+           REPORT_ERROR(ErrorManagement::Information, "Executor sleepTime: %f pollTimout: %d", totalSleepTime, pollTimout);
+    }
+#endif
     if (sleepNature == Busy) {
-        if (sleepPercentage == 0u) {
+        if (sleepPercentage > 0u) {
+            //float32 sleepTime = totalSleepTime * 0.5;
+            float32 sleepTime = totalSleepTime * (static_cast<float32>(sleepPercentage) / 100.F);
+            Sleep::NoMore(sleepTime);
             //currentDMA = 
-            PollDma(startTicks + deltaTicks + 100000u); // TODO check max wait
+            //if(PollDma(startTicks + deltaTicks + 100000u) < 0)
             //while ((HighResolutionTimer::Counter() - startTicks) < deltaTicks) {
             //}
         }
+        if(PollDma(startTicks + deltaTicks + sleepTimeTicks + 10000u) < 0)
+            pollTimout++; // TODO check max wait
+        /*
         else {
             float32 totalSleepTime = static_cast<float32>(static_cast<float64>(deltaTicks) * HighResolutionTimer::Period());
             uint32 busyPercentage = (100u - sleepPercentage);
             float32 busyTime = totalSleepTime * (static_cast<float32>(busyPercentage) / 100.F);
             Sleep::SemiBusy(totalSleepTime, busyTime);
         }
+        */
     }
     else {
         float32 sleepTime = static_cast<float32>(static_cast<float64>(deltaTicks) * HighResolutionTimer::Period());
@@ -691,6 +724,9 @@ uint32 AtcaIopADC::GetStackSize() const {
 uint32 AtcaIopADC::GetSleepPercentage() const {
     return sleepPercentage;
 }
+/*
+ * waitLimitTicks in ns
+ * */
 
 int32 AtcaIopADC::PollDma(uint64 waitLimitTicks) const {
         uint32 buffIdx = oldestBufferIdx;

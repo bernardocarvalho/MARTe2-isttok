@@ -248,7 +248,7 @@ namespace MARTe {
             /**
              * The board identifier
              */
-            //uint32 boardId;
+            uint32 boardId;
             /**
              * The numberOfChannels
              */
@@ -264,7 +264,7 @@ namespace MARTe {
             /**
              * The board device name
              */
-            StreamString deviceDmaName;
+            //StreamString deviceDmaName;
             /**
              * The board file descriptor
              */
@@ -293,6 +293,12 @@ namespace MARTe {
              * The selected sleep nature.
              */
             AtcaIopADCSleepNature sleepNature;
+
+            /**
+             * Debugging
+             */
+            uint32 execCounter;
+            uint32 pollTimout;
 
             /**
              * Current counter and timer

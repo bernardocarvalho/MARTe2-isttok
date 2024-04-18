@@ -77,7 +77,6 @@ namespace MARTe {
     AtcaIopConfigEoWo::~AtcaIopConfigEoWo() {
         if (boardFileDescriptor != -1) {
             uint32 statusReg = 0;
-            //REPORT_ERROR(ErrorManagement::Information, " Close Device Status Reg %d, 0x%x", rc, statusReg);
             close(boardFileDescriptor);
             REPORT_ERROR(ErrorManagement::Information, "Close device %d OK. Status Reg 0x%x,", boardFileDescriptor, statusReg);
         }
@@ -206,6 +205,9 @@ namespace MARTe {
     /*lint -e{715}  [MISRA C++ Rule 0-1-11], [MISRA C++ Rule 0-1-12]. Justification: the counter and the timer are always reset irrespectively of the states being changed.*/
     bool AtcaIopConfigEoWo::PrepareNextState(const char8* const currentStateName, const char8* const nextStateName) {
         REPORT_ERROR(ErrorManagement::Information, " EoWo currentStateName   %s, nextStateName %s", currentStateName, nextStateName);
+        //if (currentStateName == "Idle") {
+        //    REPORT_ERROR(ErrorManagement::Information, "OffState");
+        //}
         return true;
     }
 
@@ -351,7 +353,6 @@ namespace MARTe {
             }
             if (ok) {
                 //Allocate memory
-                //channelsMemory = new float32[ATCA_IOP_MAX_DAC_CHANNELS];
                 eoValues = new int32[ATCA_IOP_MAX_ADC_CHANNELS];
                 woValues = new float32[ATCA_IOP_MAX_ADC_CHANNELS];
             }
@@ -362,11 +363,15 @@ namespace MARTe {
 
         bool AtcaIopConfigEoWo::Synchronise() {
             uint32 i;
-            int32 w;
+            int32 w = 1;
             bool ok = true;
+#ifdef DEBUG_POLL
             if((synchCounter++)%4096 == 0) {
-                REPORT_ERROR(ErrorManagement::Information, " Synchronise");
+                //i = (synchCounter/4096) & 0xF;
+                REPORT_ERROR(ErrorManagement::Information, "Synchronise eo0:%d wo0%0.3f", eoValues[0], woValues[0]);
             }
+#endif
+            //write(boardFileDescriptor,  &w, 4);
             /*
             if (channelsMemory != NULL_PTR(float32 *)) {
 

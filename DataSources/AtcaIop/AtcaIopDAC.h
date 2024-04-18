@@ -183,6 +183,10 @@ namespace MARTe {
              */
             StreamString deviceName;
             /**
+             * The board identifier
+             */
+            uint32 boardId;
+            /**
              * The board file descriptor
              */
             int32 boardFileDescriptor;

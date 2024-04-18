@@ -15,8 +15,8 @@ app = pg.mkQApp("Plotting MARTe2 AtcaIop Data")
 #mw = QtWidgets.QMainWindow()
 #mw.resize(800,800)
 
-MAX_SAMPLES = 50000
-ADC_CHANNELS = 4
+#MAX_SAMPLES = 50000
+#ADC_CHANNELS = 4
 DECIM_RATE = 200
 
 parser = argparse.ArgumentParser(description = 'Script to support the QA activities')
@@ -27,7 +27,7 @@ parser.add_argument('-c', '--crange', nargs='+',type=int, help='Channel plots (1
 parser.add_argument('-i', '--irange', nargs='+',type=int,default=[1, 12])
 #parser.add_argument('pulse','-', nargs='+', help='<Required> Set flag', required=True)
 parser.add_argument('-s', '--shot', type=int, help='Mds+ pulse Number ([1, ...])', default=100)
-parser.add_argument('-m', '--maxsamples', type=int, help='Max samples to plot', default=50000)
+parser.add_argument('-m', '--maxpoints', type=int, help='Max points to plot', default=50000)
 parser.add_argument('-z', '--zero', action='store_true',help='Zero integral Lines') #, default='')
 
 args = parser.parse_args()
@@ -60,8 +60,7 @@ for i in range(start, stop):
     mdsNode = tree.getNode(f"ATCAIOP1.ADC{i}RAW")
     dataAdc = mdsNode.getData().data()
     timeData = mdsNode.getDimensionAt(0).data()
-    #y = dataAdc[ :args.maxsamples, 0]
-    y = dataAdc[ :MAX_SAMPLES, 0]
+    y = dataAdc[ :args.maxpoints, 0]
     x = DECIM_RATE * np.arange(len(y)) / 2.0e6
     p1.plot(x,y, pen=pg.mkPen(i, width=2), name=f"Ch {i+1}")
 #p1.setLabel('bottom', "Y Axis", units='s')
@@ -79,7 +78,7 @@ for i in range(start, stop):
         dataAdcInt = mdsNode.getData().data()
         timeData = mdsNode.getDimensionAt(0).data()
         total_samples = DECIM_RATE * len(dataAdcInt[:, 0])
-        y = dataAdcInt[ :args.maxsamples, 0]  / 2.0e6 #  LSB * sec
+        y = dataAdcInt[ :args.maxpoints, 0]  / 2.0e6 #  LSB * sec
         if(args.zero):
             y = y - dataAdcInt[0, 0] / 2.0e6 #  LSB * sec
             wo =  (dataAdcInt[-1, 0] - dataAdcInt[0, 0]) /total_samples
@@ -96,5 +95,10 @@ p4.setLabel('bottom', "Time", units='s')
 #updatePlot()
 
 if __name__ == '__main__':
-    pg.exec()
+    import sys
+    if sys.flags.interactive != 1 or not hasattr(QtCore, 'PYQT_VERSION'):
+        pg.QtGui.QApplication.exec_()
+
+    #iprint("xwc")
+    #pg.exec()
 # vim: syntax=python ts=4 sw=4 sts=4 sr et

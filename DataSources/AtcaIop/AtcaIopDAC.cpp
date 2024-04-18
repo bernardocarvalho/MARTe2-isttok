@@ -57,6 +57,7 @@ namespace MARTe {
             numberOfDACsEnabled = 0u;
             //isMaster = 0u;
             deviceName = "";
+            boardId = 2u;
             triggerSet = false;
             uint32 n;
             for (n = 0u; n < ATCA_IOP_MAX_DAC_CHANNELS; n++) {
@@ -198,6 +199,12 @@ namespace MARTe {
             }
         }
 
+        if (ok) {
+            ok = data.Read("BoardId", boardId);
+            if (!ok) {
+                REPORT_ERROR(ErrorManagement::ParametersError, "The BoardId shall be specified");
+            }
+        }
         //if (!data.Read("IsMaster", isMaster)) {
         //  REPORT_ERROR(ErrorManagement::Warning, "IsMaster not specified. Using default: %d", isMaster);
         //}
@@ -232,7 +239,7 @@ namespace MARTe {
                         }
                         if (ok) {
                             outputRange[i] = range;
-                REPORT_ERROR(ErrorManagement::Information, " Parameter DAC %d  Output Range %f", i, range);
+                            REPORT_ERROR(ErrorManagement::Information, " Parameter DAC %d  Output Range %f", i, range);
                             //dacEnabled[i] = true;
                             numberOfDACsEnabled++;
                         }
@@ -303,7 +310,8 @@ namespace MARTe {
             StreamString fullDeviceName;
             //Configure the board
             if (ok) {
-                ok = fullDeviceName.Printf("%s", deviceName.Buffer());
+                ok = fullDeviceName.Printf("%s_dac_%d", deviceName.Buffer(), boardId);
+                //ok = fullDeviceName.Printf("%s", deviceName.Buffer());
             }
             if (ok) {
                 ok = fullDeviceName.Seek(0LLU);
@@ -332,7 +340,7 @@ namespace MARTe {
             bool ok = true;
             if (channelsMemory != NULL_PTR(float32 *)) {
 
-//                value = channelsMemory[0] / DAC_RANGE;
+                //                value = channelsMemory[0] / DAC_RANGE;
                 for (i = 0u; (i < 2u) && (ok); i++) {
                     //for (i = 0u; (i < numberOfDACsEnabled ) && (ok); i++) {
                     float32 value = channelsMemory[i] / outputRange[i];
@@ -345,12 +353,12 @@ namespace MARTe {
                     //              write(boardFileDescriptor,  &w, 4);
                     //REPORT_ERROR(ErrorManagement::Information, " Writing DAC 0 0x%x", w);
                 }
-            }
-            /*
+                }
+                /*
 
-               w = dacValues[i];
-               }
-               */
+                   w = dacValues[i];
+                   }
+                   */
             return ok;
         }
 
