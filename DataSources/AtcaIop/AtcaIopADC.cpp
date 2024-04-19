@@ -40,7 +40,7 @@
 #include "AtcaIopADC.h"
 #include "atca-v6-iop-ioctl.h"
 
-#define DEBUG_POLL 1
+#define DEBUG_POLL 32768
 /*---------------------------------------------------------------------------*/
 /*                           Static definitions                              */
 /*---------------------------------------------------------------------------*/
@@ -660,7 +660,7 @@ ErrorManagement::ErrorType AtcaIopADC::Execute(ExecutionInfo& info) {
     oldestBufferIdx = GetOldestBufferIdx();
     float32 totalSleepTime = static_cast<float32>(static_cast<float64>(deltaTicks) * HighResolutionTimer::Period());
 #ifdef DEBUG_POLL    
-    if((execCounter++)%4096 == 0) {
+    if((execCounter++)%DEBUG_POLL == 0) {
            REPORT_ERROR(ErrorManagement::Information, "Executor sleepTime: %f pollTimout: %d", totalSleepTime, pollTimout);
     }
 #endif

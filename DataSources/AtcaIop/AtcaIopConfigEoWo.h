@@ -213,6 +213,8 @@ namespace MARTe {
              */
             float32 *woValues;
 
+            bool eoWriteFlag;
+
             /**
              * The signal memory
              */

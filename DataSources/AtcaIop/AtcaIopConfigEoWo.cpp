@@ -64,6 +64,7 @@ namespace MARTe {
             //channelsMemory = NULL_PTR(float32 *);
             eoValues = NULL_PTR(int32 *);
             woValues = NULL_PTR(float32 *);
+            eoWriteFlag = false;
 
             filter = ReferenceT<RegisteredMethodsMessageFilter>(GlobalObjectsDatabase::Instance()->GetStandardHeap());
             filter->SetDestination(this);
@@ -205,6 +206,11 @@ namespace MARTe {
     /*lint -e{715}  [MISRA C++ Rule 0-1-11], [MISRA C++ Rule 0-1-12]. Justification: the counter and the timer are always reset irrespectively of the states being changed.*/
     bool AtcaIopConfigEoWo::PrepareNextState(const char8* const currentStateName, const char8* const nextStateName) {
         REPORT_ERROR(ErrorManagement::Information, " EoWo currentStateName   %s, nextStateName %s", currentStateName, nextStateName);
+        StreamString nSName = nextStateName;
+        if (nSName == "Run") {
+            eoWriteFlag = true;
+        }
+
         //if (currentStateName == "Idle") {
         //    REPORT_ERROR(ErrorManagement::Information, "OffState");
         //}
@@ -371,6 +377,10 @@ namespace MARTe {
                 REPORT_ERROR(ErrorManagement::Information, "Synchronise eo0:%d wo0%0.3f", eoValues[0], woValues[0]);
             }
 #endif
+        if (eoWriteFlag) {
+            eoWriteFlag = false;
+            REPORT_ERROR(ErrorManagement::Information, "Write  eo0:%d wo0%0.3f", eoValues[0], woValues[0]);
+        }
             //write(boardFileDescriptor,  &w, 4);
             /*
             if (channelsMemory != NULL_PTR(float32 *)) {
