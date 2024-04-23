@@ -53,8 +53,8 @@ namespace MARTe {
     const uint32 ATCA_IOP_MAX_CHANNELS = 32u;
     
     const uint32 ATCA_IOP_N_TIMCNT = 2u;
-    const uint32 ATCA_IOP_N_ADCs = 12u;
-    const uint32 ATCA_IOP_N_INTEGRALS = ATCA_IOP_N_ADCs ; //12u;
+    const uint32 ATCA_IOP_N_ADCs = 16u;
+    const uint32 ATCA_IOP_N_INTEGRALS = ATCA_IOP_N_ADCs;
     //const uint32 ADC_SIMULATOR_N_ADCs = 2u;
     const uint32 ATCA_IOP_N_SIGNALS = (ATCA_IOP_N_TIMCNT + ATCA_IOP_N_ADCs +
             ATCA_IOP_N_INTEGRALS);

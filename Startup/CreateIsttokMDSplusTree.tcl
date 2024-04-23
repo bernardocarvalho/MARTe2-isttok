@@ -35,6 +35,14 @@ add node ADC10RAW/usage=signal
 add node ADC10RAWD/usage=signal
 add node ADC11RAW/usage=signal
 add node ADC11RAWD/usage=signal
+add node ADC12RAW/usage=signal
+add node ADC12RAWD/usage=signal
+add node ADC13RAW/usage=signal
+add node ADC13RAWD/usage=signal
+add node ADC14RAW/usage=signal
+add node ADC14RAWD/usage=signal
+add node ADC15RAW/usage=signal
+add node ADC15RAWD/usage=signal
 
 add node ADC0INT/usage=signal
 add node ADC0INTD/usage=signal
@@ -60,6 +68,14 @@ add node ADC10INT/usage=signal
 add node ADC10INTD/usage=signal
 add node ADC11INT/usage=signal
 add node ADC11INTD/usage=signal
+add node ADC12INT/usage=signal
+add node ADC12INTD/usage=signal
+add node ADC13INT/usage=signal
+add node ADC13INTD/usage=signal
+add node ADC14INT/usage=signal
+add node ADC14INTD/usage=signal
+add node ADC15INT/usage=signal
+add node ADC15INTD/usage=signal
 
 set def \RTAPPISTTOK::TOP.INP
 add node MEAS0D/usage=signal
