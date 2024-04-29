@@ -37,7 +37,9 @@
 /*---------------------------------------------------------------------------*/
 #include "AdvancedErrorManagement.h"
 #include "MemoryMapSynchronisedOutputBroker.h"
+
 #include "AtcaIopConfigEoWo.h"
+#include "atca-v6-iop-ioctl.h"
 
 /*---------------------------------------------------------------------------*/
 /*                           Static definitions                              */
@@ -52,7 +54,7 @@ namespace MARTe {
     AtcaIopConfigEoWo::AtcaIopConfigEoWo() :
         DataSourceI(),
         MessageI() {
-            boardFileDescriptor = -1;
+            devFileDescriptor = -1;
             //numberOfDACsEnabled = 0u;
             //isMaster = 0u;
             deviceName = "";
@@ -76,10 +78,10 @@ namespace MARTe {
 
     /*lint -e{1551} the destructor must guarantee that the Timer SingleThreadService is stopped.*/
     AtcaIopConfigEoWo::~AtcaIopConfigEoWo() {
-        if (boardFileDescriptor != -1) {
+        if (devFileDescriptor != -1) {
             uint32 statusReg = 0;
-            close(boardFileDescriptor);
-            REPORT_ERROR(ErrorManagement::Information, "Close device %d OK. Status Reg 0x%x,", boardFileDescriptor, statusReg);
+            close(devFileDescriptor);
+            REPORT_ERROR(ErrorManagement::Information, "Close device %d OK. Status Reg 0x%x,", devFileDescriptor, statusReg);
         }
         if (eoValues != NULL_PTR(int32 *)) {
             delete[] eoValues;
@@ -88,7 +90,7 @@ namespace MARTe {
             delete[] woValues;
         }
         //if (channelsMemory != NULL_PTR(float32 *)) {
-            //delete[] channelsMemory;
+        //delete[] channelsMemory;
         //}
     }
 
@@ -114,13 +116,13 @@ namespace MARTe {
             ok = false;
         }
         /*
-        bool ok = (signalIdx < (ATCA_IOP_MAX_DAC_CHANNELS));
-        if (ok) {
-            if (channelsMemory != NULL_PTR(float32 *)) {
-                signalAddress = &(channelsMemory[signalIdx]);
-            }
-        }
-        */
+           bool ok = (signalIdx < (ATCA_IOP_MAX_DAC_CHANNELS));
+           if (ok) {
+           if (channelsMemory != NULL_PTR(float32 *)) {
+           signalAddress = &(channelsMemory[signalIdx]);
+           }
+           }
+           */
         return ok;
     }
 
@@ -236,141 +238,145 @@ namespace MARTe {
         //Get individual signal parameters
         //uint32 i = 0u;
         /*
+           if (ok) {
+           ok = data.MoveRelative("Signals");
+           if (!ok) {
+           REPORT_ERROR(ErrorManagement::ParametersError, "Could not move to the Signals section");
+           }
+        //Do not allow to add signals in run-time
         if (ok) {
-            ok = data.MoveRelative("Signals");
-            if (!ok) {
-                REPORT_ERROR(ErrorManagement::ParametersError, "Could not move to the Signals section");
-            }
-            //Do not allow to add signals in run-time
-            if (ok) {
-                ok = signalsDatabase.MoveRelative("Signals");
-            }
-            if (ok) {
-                ok = signalsDatabase.Write("Locked", 1u);
-            }
-            if (ok) {
-                ok = signalsDatabase.MoveToAncestor(1u);
-            }
-            while ((i < ATCA_IOP_MAX_DAC_CHANNELS) && (ok)) {
-                if (data.MoveRelative(data.GetChildName(i))) {
-                    //uint32 channelId;
-                    float32 range;
-                    ok = data.Read("OutputRange", range);
-                    if (ok) {
-                        //if (data.Read("OutputRange", range)) {
-                        ok = (range > 0.0) && (range <= ATCA_IOP_MAX_DAC_RANGE);
-                        if (!ok) {
-                            REPORT_ERROR(ErrorManagement::ParametersError, "Invalid OutputRange specified.");
-                        }
-                        if (ok) {
-                            outputRange[i] = range;
-                REPORT_ERROR(ErrorManagement::Information, " Parameter DAC %d  Output Range %f", i, range);
-                            //dacEnabled[i] = true;
-                            numberOfDACsEnabled++;
-                        }
-                    }
-                        else {
-                            REPORT_ERROR(ErrorManagement::ParametersError, "The OutputRange shall be specified.");
-                        }
-                        if (ok) {
-                            ok = data.MoveToAncestor(1u);
-                        }
-                        i++;
-                    }
-                    else {
-                        break;
-                    }
-                }
-            }
-//            REPORT_ERROR(ErrorManagement::Information, "numberOfDACsEnabled %d", numberOfDACsEnabled);
-//
-*/
+        ok = signalsDatabase.MoveRelative("Signals");
+        }
+        if (ok) {
+        ok = signalsDatabase.Write("Locked", 1u);
+        }
+        if (ok) {
+        ok = signalsDatabase.MoveToAncestor(1u);
+        }
+        while ((i < ATCA_IOP_MAX_DAC_CHANNELS) && (ok)) {
+        if (data.MoveRelative(data.GetChildName(i))) {
+        //uint32 channelId;
+        float32 range;
+        ok = data.Read("OutputRange", range);
+        if (ok) {
+        //if (data.Read("OutputRange", range)) {
+        ok = (range > 0.0) && (range <= ATCA_IOP_MAX_DAC_RANGE);
+        if (!ok) {
+        REPORT_ERROR(ErrorManagement::ParametersError, "Invalid OutputRange specified.");
+        }
+        if (ok) {
+        outputRange[i] = range;
+        REPORT_ERROR(ErrorManagement::Information, " Parameter DAC %d  Output Range %f", i, range);
+        //dacEnabled[i] = true;
+        numberOfDACsEnabled++;
+        }
+        }
+        else {
+        REPORT_ERROR(ErrorManagement::ParametersError, "The OutputRange shall be specified.");
+        }
+        if (ok) {
+        ok = data.MoveToAncestor(1u);
+        }
+        i++;
+        }
+        else {
+        break;
+        }
+        }
+        }
+        //            REPORT_ERROR(ErrorManagement::Information, "numberOfDACsEnabled %d", numberOfDACsEnabled);
+        //
+        */
 
-            return ok;
+        return ok;
+    }
+
+    bool AtcaIopConfigEoWo::SetConfiguredDatabase(StructuredDataI& data) {
+        uint32 i;
+        bool ok = DataSourceI::SetConfiguredDatabase(data);
+
+        if (ok) {
+            ok = triggerSet;
+        }
+        if (!ok) {
+            REPORT_ERROR(ErrorManagement::ParametersError, "At least one Trigger signal shall be set.");
         }
 
-        bool AtcaIopConfigEoWo::SetConfiguredDatabase(StructuredDataI& data) {
-            uint32 i;
-            bool ok = DataSourceI::SetConfiguredDatabase(data);
-
-            if (ok) {
-                ok = triggerSet;
-            }
+        // Check the signal index 
+        uint32 nOfSignals = GetNumberOfSignals();
+        if (ok) {
+            ok = (nOfSignals > 0u);
             if (!ok) {
-                REPORT_ERROR(ErrorManagement::ParametersError, "At least one Trigger signal shall be set.");
+                REPORT_ERROR(ErrorManagement::ParametersError, "At least one signal shall be defined");
             }
-
-            // Check the signal index 
-            uint32 nOfSignals = GetNumberOfSignals();
-            if (ok) {
-                ok = (nOfSignals > 0u);
+        }
+        if (ok) {
+            ok = (GetSignalType(0).type == SignedInteger);
+            if (!ok) {
+                REPORT_ERROR(ErrorManagement::ParametersError, "EO signal shall be of type SignedInteger");
+            }
+            else {
+                //In member function ‘virtual bool MARTe::AtcaIopConfigEoWo::SetConfiguredDatabase(MARTe::StructuredDataI&)’:
+                //AtcaIopConfigEoWo.cpp:311:49: error: no match for ‘operator==’ (operand types are ‘MARTe::BitRange<short unsigned int, 4, 2>’ and ‘const MARTe::TypeDescriptor’)
+                ok = (GetSignalType(1) == Float32Bit);
                 if (!ok) {
-                    REPORT_ERROR(ErrorManagement::ParametersError, "At least one signal shall be defined");
+                    REPORT_ERROR(ErrorManagement::ParametersError, "WO signal shall be of type Float32Bit");
                 }
             }
-            if (ok) {
-                ok = (GetSignalType(0).type == SignedInteger);
-                if (!ok) {
-                    REPORT_ERROR(ErrorManagement::ParametersError, "EO signal shall be of type SignedInteger");
-                }
-                else {
-                    //In member function ‘virtual bool MARTe::AtcaIopConfigEoWo::SetConfiguredDatabase(MARTe::StructuredDataI&)’:
-//AtcaIopConfigEoWo.cpp:311:49: error: no match for ‘operator==’ (operand types are ‘MARTe::BitRange<short unsigned int, 4, 2>’ and ‘const MARTe::TypeDescriptor’)
-                    ok = (GetSignalType(1) == Float32Bit);
-                    if (!ok) {
-                        REPORT_ERROR(ErrorManagement::ParametersError, "WO signal shall be of type Float32Bit");
-                    }
-                }
-            }
-            uint32 nOfFunctions = GetNumberOfFunctions();
-            uint32 functionIdx;
-            /*
-            //Check that the number of samples for all the signals is one
-            for (functionIdx = 0u; (functionIdx < nOfFunctions) && (ok); functionIdx++) {
+        }
+        uint32 nOfFunctions = GetNumberOfFunctions();
+        uint32 functionIdx;
+        /*
+        //Check that the number of samples for all the signals is one
+        for (functionIdx = 0u; (functionIdx < nOfFunctions) && (ok); functionIdx++) {
 
-                for (i = 0u; (i < nOfSignals) && (ok); i++) {
-                    uint32 nSamples = 0u;
-                    ok = GetFunctionSignalSamples(OutputSignals, functionIdx, i, nSamples);
-                    if (ok) {
-                        ok = (nSamples == 1u);
-                    }
-                    if (!ok) {
-                        REPORT_ERROR(ErrorManagement::ParametersError, "The number of samples shall be exactly one");
-                    }
-                }
+        for (i = 0u; (i < nOfSignals) && (ok); i++) {
+        uint32 nSamples = 0u;
+        ok = GetFunctionSignalSamples(OutputSignals, functionIdx, i, nSamples);
+        if (ok) {
+        ok = (nSamples == 1u);
+        }
+        if (!ok) {
+        REPORT_ERROR(ErrorManagement::ParametersError, "The number of samples shall be exactly one");
+        }
+        }
+        }
+        */
+        StreamString fullDeviceName;
+        //Configure the board
+        if (ok) {
+            ok = fullDeviceName.Printf("%s_eo_%d", deviceName.Buffer(), boardId);
+        }
+        if (ok) {
+            ok = fullDeviceName.Seek(0LLU);
+        }
+        if (ok) {
+            devFileDescriptor = open(fullDeviceName.Buffer(), O_RDWR);
+            ok = (devFileDescriptor > -1);
+            if (!ok) {
+                REPORT_ERROR_PARAMETERS(ErrorManagement::ParametersError, "Could not open device %s", fullDeviceName);
             }
-*/
-            StreamString fullDeviceName;
-            //Configure the board
-            if (ok) {
-                ok = fullDeviceName.Printf("%s_eo_%d", deviceName.Buffer(), boardId);
-            }
-            if (ok) {
-                ok = fullDeviceName.Seek(0LLU);
-            }
-            if (ok) {
-                boardFileDescriptor = open(fullDeviceName.Buffer(), O_RDWR);
-                ok = (boardFileDescriptor > -1);
-                if (!ok) {
-                    REPORT_ERROR_PARAMETERS(ErrorManagement::ParametersError, "Could not open device %s", fullDeviceName);
-                }
-                else
-                    REPORT_ERROR(ErrorManagement::Information, "Open device %s OK", fullDeviceName);
-            }
-            if (ok) {
-                //Allocate memory
-                eoValues = new int32[ATCA_IOP_MAX_ADC_CHANNELS];
-                woValues = new float32[ATCA_IOP_MAX_ADC_CHANNELS];
-            }
-
-            return ok;
+            else
+                REPORT_ERROR(ErrorManagement::Information, "Open device %s OK", fullDeviceName);
+        }
+        if (ok) {
+            //Allocate memory
+            eoValues = new int32[ATCA_IOP_MAX_ADC_CHANNELS];
+            woValues = new float32[ATCA_IOP_MAX_ADC_CHANNELS];
         }
 
+        return ok;
+    }
 
-        bool AtcaIopConfigEoWo::Synchronise() {
-            uint32 i;
-            int32 w = 1;
-            bool ok = true;
+
+    bool AtcaIopConfigEoWo::Synchronise() {
+        uint32 i;
+        //int32 ewValues[2 * ATCA_IOP_MAX_ADC_CHANNELS];
+        struct atca_eo_config eo_conf;
+        struct atca_wo_config wo_conf;
+        int32 w = 1;
+        bool ok = true;
+        int rv;
 #ifdef DEBUG_POLL
             if((synchCounter++)%4096 == 0) {
                 //i = (synchCounter/4096) & 0xF;
@@ -379,48 +385,39 @@ namespace MARTe {
 #endif
         if (eoWriteFlag) {
             eoWriteFlag = false;
-            REPORT_ERROR(ErrorManagement::Information, "Write  eo0:%d wo0%0.3f", eoValues[0], woValues[0]);
-        }
-            //write(boardFileDescriptor,  &w, 4);
-            /*
-            if (channelsMemory != NULL_PTR(float32 *)) {
-
-//                value = channelsMemory[0] / DAC_RANGE;
-                for (i = 0u; (i < 2u) && (ok); i++) {
-                    //for (i = 0u; (i < numberOfDACsEnabled ) && (ok); i++) {
-                    float32 value = channelsMemory[i] / outputRange[i];
-                    w = SetDacReg(i, value);
-                    write(boardFileDescriptor,  &w, 4);
-                    //                value = channelsMemory[1] / DAC_RANGE;
-                    //value = channelsMemory[1] / DAC_RANGE * pow(2,17);
-                    //                w = SetDacReg(1, value);
-                    //w = 0x000FFFFF & static_cast<uint32>(value);
-                    //              write(boardFileDescriptor,  &w, 4);
-                    //REPORT_ERROR(ErrorManagement::Information, " Writing DAC 0 0x%x", w);
-                }
+            for (i=0u; i < ATCA_IOP_MAX_ADC_CHANNELS ; i++) {
+                eo_conf.offset[i] = eoValues[i];
+                wo_conf.offset[i] = static_cast<int32>(woValues[i] * 65536);
+                //ewValues[ATCA_IOP_MAX_ADC_CHANNELS + i] = static_cast<int32>(woValues[i] * 65536);
             }
-
-               w = dacValues[i];
-               }
-               */
-            return ok;
+            //rv = write(devFileDescriptor,  &ewValues[0], 2 * ATCA_IOP_MAX_ADC_CHANNELS * sizeof(int32) );
+            rv = ioctl(devFileDescriptor, ATCA_PCIE_IOPS_EO_OFFSETS, &eo_conf);
+            if (rv ) {
+                REPORT_ERROR(ErrorManagement::ParametersError, "Fail Write  eo0:%d", eoValues[0]);
+                ok = false;
+            }
+            rv = ioctl(devFileDescriptor, ATCA_PCIE_IOPS_WO_OFFSETS, &wo_conf);
+            if (rv ) {
+                REPORT_ERROR(ErrorManagement::ParametersError, "Fail Write  wo0:%6.3f", woValues[0]);
+                ok = false;
+            }
+            rv = ioctl(devFileDescriptor, ATCA_PCIE_IOPT_RST_INTEG);
+            if (rv ) {
+                REPORT_ERROR(ErrorManagement::ParametersError, "Fail reset Integrators");
+                ok = false;
+            }
+            /*
+            if (rv != 2 * ATCA_IOP_MAX_ADC_CHANNELS * sizeof(int32) ) {
+                REPORT_ERROR(ErrorManagement::ParametersError, "Fail Write  eo0:%d", eoValues[0]);
+                ok = false;
+            }
+            else
+                REPORT_ERROR(ErrorManagement::Information, "Write  eo0:%d wo0%0.3f", eoValues[0], woValues[0]);
+*/
         }
+        return ok;
+    }
 
-        int32 AtcaIopConfigEoWo::SetDacReg(uint32 channel, float32 val) const {
-            if (val > 1.0)
-                val = 1.0;
-            if (val < -1.0)
-                val = -1.0;
-            int32 dacReg = static_cast<int32>(val * pow(2,17));
-            if (dacReg > 0x1FFFF)  // 131071
-                dacReg = 0x1FFFF;
-            if (dacReg < -131072)  // -0x20000
-                dacReg = -131072;
-            dacReg &= 0x0003FFFF; // keep 18 lsb
-            dacReg |= (0xF & channel) << 28;
-            return dacReg;
-        }
-
-        CLASS_REGISTER(AtcaIopConfigEoWo, "1.0")
+    CLASS_REGISTER(AtcaIopConfigEoWo, "1.0")
     }
     //  vim: syntax=cpp ts=4 sw=4 sts=4 sr et

@@ -16,7 +16,7 @@ app = pg.mkQApp("Plotting MARTe2 AtcaIop Data")
 #mw.resize(800,800)
 
 #MAX_SAMPLES = 50000
-#ADC_CHANNELS = 4
+ADC_CHANNELS = 14 # channels stored in ISTTOK
 DECIM_RATE = 200
 
 parser = argparse.ArgumentParser(description = 'Script to support the QA activities')
@@ -28,6 +28,9 @@ parser.add_argument('-i', '--irange', nargs='+',type=int,default=[1, 12])
 #parser.add_argument('pulse','-', nargs='+', help='<Required> Set flag', required=True)
 parser.add_argument('-s', '--shot', type=int, help='Mds+ pulse Number ([1, ...])', default=100)
 parser.add_argument('-m', '--maxpoints', type=int, help='Max points to plot', default=50000)
+parser.add_argument('-e', '--averages', action='store_true', help='Calc averages')
+#parser.add_argument('-w', '--drift', action='store_true', help='Calc drifts')
+#, default='')
 parser.add_argument('-z', '--zero', action='store_true',help='Zero integral Lines') #, default='')
 
 args = parser.parse_args()
@@ -54,8 +57,32 @@ p1 = win.addPlot(title="ATCA-IOP ADC raw decimated")
 #dataAdc = mdsNode.getData().data()
 #timeData = mdsNode.getDimensionAt(0).data()
 p1.addLegend()
-start = args.crange[0] -1; stop = args.crange[1] - 1
+start = args.crange[0] -1; stop = args.crange[1]
 #for i in range(args.crange[0], args.crange[1]):
+meanD = np.zeros(ADC_CHANNELS, dtype=int)
+driftW = np.zeros(ADC_CHANNELS)
+total_samples = 0
+for i in range(ADC_CHANNELS):
+    mdsNode = tree.getNode(f"ATCAIOP1.ADC{i}RAW")
+    dataAdc = mdsNode.getData().data()
+    meanD[i] = np.mean(dataAdc[:,0]).astype(int)
+    mdsNode = tree.getNode(f"ATCAIOP1.ADC{i}INT")
+    dataAdcInt = mdsNode.getData().data()
+    total_samples = DECIM_RATE * len(dataAdcInt[:, 0])
+    driftW[i] =  (dataAdcInt[-1, 0] - dataAdcInt[0, 0]) /total_samples
+
+if(args.averages):
+    print(f"EO: {ADC_CHANNELS} ", end='')
+    for i in range(ADC_CHANNELS):
+        print(f"{meanD[i]:d} ", end='')
+    print(" ")
+    print(f"WO: {ADC_CHANNELS} ", end='')
+    for i in range(ADC_CHANNELS):
+        print(f"{driftW[i]:0.3f} ", end='')
+    print(" ")
+    print(f"Samples {total_samples}, time {total_samples/2e3:.3f} ms")
+
+
 for i in range(start, stop):
     mdsNode = tree.getNode(f"ATCAIOP1.ADC{i}RAW")
     dataAdc = mdsNode.getData().data()
@@ -69,8 +96,8 @@ win.nextRow()
 p4 = win.addPlot(title="Channel Integrals")
 p4.addLegend()
 #for i in range(8,12):
-start = args.irange[0] -1; stop = args.irange[1] - 1
-print("WO: ", end='')
+start = args.irange[0] -1; stop = args.irange[1]
+#print("WO: ", end='')
 for i in range(start, stop):
     #mdsNode = tree.getNode(f"ATCAIOP1.ADC8INT")
     mdsNode = tree.getNode(f"ATCAIOP1.ADC{i}INT")
@@ -81,8 +108,8 @@ for i in range(start, stop):
         y = dataAdcInt[ :args.maxpoints, 0]  / 2.0e6 #  LSB * sec
         if(args.zero):
             y = y - dataAdcInt[0, 0] / 2.0e6 #  LSB * sec
-            wo =  (dataAdcInt[-1, 0] - dataAdcInt[0, 0]) /total_samples
-            print(f"{wo:0.4f} ", end='')
+            #wo =  (dataAdcInt[-1, 0] - dataAdcInt[0, 0]) /total_samples
+            # print(f"{wo:0.4f} ", end='')
         x = DECIM_RATE * np.arange(len(y)) / 2.0e6 # in sec
         p4.plot(x,y, pen=pg.mkPen(i, width=2), name=f"Ch {i+1}")
     except:

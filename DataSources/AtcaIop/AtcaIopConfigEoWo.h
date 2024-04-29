@@ -195,7 +195,7 @@ namespace MARTe {
             /**
              * The board file descriptor
              */
-            int32 boardFileDescriptor;
+            int32 devFileDescriptor;
 
             uint32 synchCounter;
             /**
@@ -235,7 +235,7 @@ namespace MARTe {
              */
             bool triggerSet;
             
-            int32 SetDacReg(uint32 channel, float32 val) const;
+            //int32 SetDacReg(uint32 channel, float32 val) const;
 
     };
 }

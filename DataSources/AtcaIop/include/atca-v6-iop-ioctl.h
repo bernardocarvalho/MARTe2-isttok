@@ -86,7 +86,9 @@ struct atca_wo_config {
 
 #define ATCA_PCIE_IOPG_DACS_REG _IOR(ATCA_PCIE_IOP_MAGIC, 29, u_int32_t)
 
-#define ATCA_PCIE_IOP_MAXNR 29
+#define ATCA_PCIE_IOPT_RST_INTEG  _IO(ATCA_PCIE_IOP_MAGIC,    30)
+
+#define ATCA_PCIE_IOP_MAXNR 30
 
 #endif /* _ATCA_IOP_IOPTL_H_ */
 

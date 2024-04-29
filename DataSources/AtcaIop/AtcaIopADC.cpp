@@ -433,10 +433,10 @@ bool AtcaIopADC::SetConfiguredDatabase(StructuredDataI& data) {
         ok = false;
         REPORT_ERROR(ErrorManagement::FatalError, "Device Status Reg %d, 0x%x", rc, statusReg);
     }
-    rc = ioctl(boardFileDescriptor, ATCA_PCIE_IOPT_ACQ_ENABLE);
+   // rc = ioctl(boardFileDescriptor, ATCA_PCIE_IOPT_ACQ_ENABLE);
     //rc = ioctl(boardFileDescriptor, ATCA_PCIE_IOPT_DMA_DISABLE);
-    Sleep::Busy(0.001); // in Sec
-    rc = ioctl(boardFileDescriptor, ATCA_PCIE_IOPT_ACQ_DISABLE);
+    //Sleep::Busy(0.001); // in Sec
+    //rc = ioctl(boardFileDescriptor, ATCA_PCIE_IOPT_ACQ_DISABLE);
 
     rc = ioctl(boardFileDescriptor, ATCA_PCIE_IOPT_IRQ_DISABLE);
     rc = ioctl(boardFileDescriptor, ATCA_PCIE_IOPT_STREAM_ENABLE);
