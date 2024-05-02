@@ -401,7 +401,8 @@ namespace MARTe {
             /**
              * Pointer to mapped memory
              */
-            int32 * mappedDmaBase;
+            //int32 * mappedDmaBase;
+            void * mappedDmaBase;
             uint32   mappedDmaSize;
             /**
              * The last written buffer

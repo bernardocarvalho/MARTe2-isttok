@@ -46,71 +46,86 @@
 /*---------------------------------------------------------------------------*/
 namespace MARTe {
 
-//const float64 ADC_SIMULATOR_PI = 3.14159265359;
-const uint32 IOP_ADC_OFFSET = 2u; // in DMA Data packet in 32b. First 2 are counter.
-const uint32 IOP_ADC_INTEG_OFFSET = 16u;  // in 64 bit words
+    //const float64 ADC_SIMULATOR_PI = 3.14159265359;
+    const uint32 IOP_ADC_OFFSET = 2u; // in DMA Data packet in 32b. First 2 are counter.
+    const uint32 IOP_ADC_INTEG_OFFSET = 16u;  // in 64 bit words
 
-const uint32 RT_PCKT_SIZE = 1024u;
-const uint32 RT_PCKT64_SIZE = 512u; // In 64 bit words
+    const uint32 RT_PCKT_SIZE = 1024u;
+    const uint32 RT_PCKT64_SIZE = 512u; // In 64 bit words
 
-/* 256 + 3840 = 4096 B (PAGE_SIZE) data packet*/
-typedef struct _DMA_CH1_PCKT {
-    uint32 head_time_cnt;
-    uint32 header; // h5431BACD
-    int32 channel[60]; // 24 56
-    uint32 foot_time_cnt;
-    uint32 footer; // h9876ABDC
-    uint8 page_fill[3840];
-} DMA_CH1_PCKT;
+    /* 256 + 3840 = 4096 B (PAGE_SIZE) data packet
+       typedef struct _DMA_CH1_PCKT {
+       uint32 head_time_cnt;
+       uint32 header; // h5431BACD
+       int32 channel[60]; // 24 56
+       uint32 foot_time_cnt;
+       uint32 footer; // h9876ABDC
+       uint8 page_fill[3840];
+       } DMA_CH1_PCKT;
+       */
+#define DMA_RT_PCKT_SIZE 256
+    /* 256 Bytes RT  data packet */ 
+    typedef struct _DMA_CH1_PCKT {
+        volatile uint32_t head_time_cnt;
+        volatile uint32_t header; // h5431BACD
+        volatile int32_t adc_decim_data[ADC_CHANNELS];
+        volatile uint64_t _fill64_0;  // 00
+        volatile int64_t adc_integ_data[ADC_CHANNELS];
+        volatile int64_t _fill64_1[4]; // 00
+        volatile uint32_t sample_cnt;
+        volatile uint32_t _fill32; // hAAAABBBB
+        volatile uint32_t foot_time_cnt;
+        volatile uint32_t footer; // h9876ABDC
+    } DMA_CH1_PCKT;
 
-struct atca_eo_config {
-      int32_t offset[ATCA_IOP_MAX_CHANNELS];
-};
+    struct atca_eo_config {
+        int32_t offset[ATCA_IOP_MAX_CHANNELS];
+    };
 
-struct atca_wo_config {
-      int32_t offset[ATCA_IOP_MAX_CHANNELS];
-};
+    struct atca_wo_config {
+        int32_t offset[ATCA_IOP_MAX_CHANNELS];
+    };
 
-//}
+    //}
 
 /*---------------------------------------------------------------------------*/
 /*                           Method definitions                              */
 /*---------------------------------------------------------------------------*/
 AtcaIopADC::AtcaIopADC() :
-        DataSourceI(), MessageI(), EmbeddedServiceMethodBinderI(), executor(*this) {
-    deviceName = "";
-    boardId = 2u;
-    //deviceDmaName = "";
-    boardFileDescriptor = -1;
-    boardDmaDescriptor = -1;
-    mappedDmaBase = NULL;
-    mappedDmaSize = 0u;
-    isMaster = 0u;
-    oldestBufferIdx = 0u;
-    lastTimeTicks = 0u;
-    sleepTimeTicks = 0u;
-    timerPeriodUsecTime = 0u;
-    counterAndTimer[0] = 0u;
-    counterAndTimer[1] = 0u;
-    sleepNature = Busy;
-    sleepPercentage = 0u;
-    execCounter = 0u;
-    pollTimout = 0u;
-    adcPeriod = 0.;
-    uint32 k;
-    for (k=0u; k<ATCA_IOP_N_ADCs; k++) {
-        adcValues[k] = 0u;
-        electricalOffsets[k] = 0u;
-        wiringOffsets[k] = 0.0;
-    }
-    for (k=0u; k<ATCA_IOP_N_INTEGRALS; k++) {
-        adcIntegralValues[k] = 0u;
-    }
+    DataSourceI(), MessageI(), EmbeddedServiceMethodBinderI(), executor(*this) {
+        deviceName = "";
+        boardId = 2u;
+        //deviceDmaName = "";
+        boardFileDescriptor = -1;
+        boardDmaDescriptor = -1;
+        mappedDmaBase = NULL;
+        mappedDmaSize = 0u;
+        isMaster = 0u;
+        oldestBufferIdx = 0u;
+        lastTimeTicks = 0u;
+        sleepTimeTicks = 0u;
+        timerPeriodUsecTime = 0u;
+        counterAndTimer[0] = 0u;
+        counterAndTimer[1] = 0u;
+        sleepNature = Busy;
+        sleepPercentage = 0u;
+        execCounter = 0u;
+        pollTimout = 0u;
+        adcPeriod = 0.;
+        uint32 k;
+        for (k=0u; k<ATCA_IOP_N_ADCs; k++) {
+            adcValues[k] = 0u;
+            electricalOffsets[k] = 0u;
+            wiringOffsets[k] = 0.0;
+        }
+        for (k=0u; k<ATCA_IOP_N_INTEGRALS; k++) {
+            adcIntegralValues[k] = 0u;
+        }
 
-    if (!synchSem.Create()) {
-        REPORT_ERROR(ErrorManagement::FatalError, "Could not create EventSem.");
+        if (!synchSem.Create()) {
+            REPORT_ERROR(ErrorManagement::FatalError, "Could not create EventSem.");
+        }
     }
-}
 
 /*lint -e{1551} the destructor must guarantee that the Timer SingleThreadService is stopped.*/
 AtcaIopADC::~AtcaIopADC() {
@@ -121,7 +136,7 @@ AtcaIopADC::~AtcaIopADC() {
         ioctl(boardFileDescriptor, ATCA_PCIE_IOPT_STREAM_DISABLE);
         ioctl(boardFileDescriptor, ATCA_PCIE_IOPT_DMA_DISABLE);
         uint32 statusReg = 0;
-       ioctl(boardFileDescriptor, ATCA_PCIE_IOPG_STATUS, &statusReg);
+        ioctl(boardFileDescriptor, ATCA_PCIE_IOPG_STATUS, &statusReg);
         //rc = ioctl(boardFileDescriptor, ATCA_PCIE_IOPT_DMA_RESET);
         close(boardFileDescriptor);
         REPORT_ERROR(ErrorManagement::Information, "Close device %d OK. Status Reg 0x%x,", boardFileDescriptor, statusReg);
@@ -163,13 +178,13 @@ bool AtcaIopADC::Initialise(StructuredDataI& data) {
         }
     }
     /*
-    if (ok) {
-        ok = data.Read("DeviceDmaName", deviceDmaName);
-        if (!ok) {
-            REPORT_ERROR(ErrorManagement::ParametersError, "The DeviceDmaName shall be specified");
-        }
-    }
-    */
+       if (ok) {
+       ok = data.Read("DeviceDmaName", deviceDmaName);
+       if (!ok) {
+       REPORT_ERROR(ErrorManagement::ParametersError, "The DeviceDmaName shall be specified");
+       }
+       }
+       */
     if (ok) {
         ok = data.Read("NumberOfChannels", numberOfChannels);
         if (!ok) {
@@ -388,13 +403,13 @@ bool AtcaIopADC::SetConfiguredDatabase(StructuredDataI& data) {
     }
 
     //mappedDmaBase = (int32 *) mmap(0,  getpagesize() * NUMBER_OF_BUFFERS,
-    mappedDmaBase = (int32 *) mmap(0,  4096u * NUMBER_OF_BUFFERS,
+    mappedDmaSize = getpagesize();
+    mappedDmaBase =  mmap(0,  mappedDmaSize, //4096u,  // * NUMBER_OF_BUFFERS,
             PROT_READ, MAP_SHARED, boardDmaDescriptor, 0);
     if (mappedDmaBase == MAP_FAILED){
         ok = false;
         REPORT_ERROR(ErrorManagement::FatalError, "Error Mapping DMA Memory Device %s", fullDeviceName);
     }
-    mappedDmaSize = getpagesize();
 
     uint32 statusReg = 0;
     int rc = ioctl(boardFileDescriptor, ATCA_PCIE_IOPT_DMA_RESET);
@@ -433,7 +448,7 @@ bool AtcaIopADC::SetConfiguredDatabase(StructuredDataI& data) {
         ok = false;
         REPORT_ERROR(ErrorManagement::FatalError, "Device Status Reg %d, 0x%x", rc, statusReg);
     }
-   // rc = ioctl(boardFileDescriptor, ATCA_PCIE_IOPT_ACQ_ENABLE);
+    // rc = ioctl(boardFileDescriptor, ATCA_PCIE_IOPT_ACQ_ENABLE);
     //rc = ioctl(boardFileDescriptor, ATCA_PCIE_IOPT_DMA_DISABLE);
     //Sleep::Busy(0.001); // in Sec
     //rc = ioctl(boardFileDescriptor, ATCA_PCIE_IOPT_ACQ_DISABLE);
@@ -469,7 +484,7 @@ bool AtcaIopADC::SetConfiguredDatabase(StructuredDataI& data) {
             bool isCounter = false;
             bool isTime = false;
             bool isAdc = false;
-//            bool isAdcDecim = false;
+            //            bool isAdcDecim = false;
             //bool isAdcSim = false;
             uint32 signalIdx = 0u;
             uint32 nSamples = 0u;
@@ -504,13 +519,13 @@ bool AtcaIopADC::SetConfiguredDatabase(StructuredDataI& data) {
                     }
                 }
                 /*
-                else if (isAdcDecim) {
-                    ok = GetSignalNumberOfElements(signalIdx, nElements);
-                    REPORT_ERROR(ErrorManagement::Information, "The ADC decim Signal Elements %d", nElements);
-                   // if (nSamples > 1u) {
-                    //    ok = false;
-                    //    REPORT_ERROR(ErrorManagement::ParametersError, "The second signal (time) shall have one and only one sample");
-                    //}
+                   else if (isAdcDecim) {
+                   ok = GetSignalNumberOfElements(signalIdx, nElements);
+                   REPORT_ERROR(ErrorManagement::Information, "The ADC decim Signal Elements %d", nElements);
+                // if (nSamples > 1u) {
+                //    ok = false;
+                //    REPORT_ERROR(ErrorManagement::ParametersError, "The second signal (time) shall have one and only one sample");
+                //}
                 }
                 */
                 else if (isAdc) {
@@ -520,17 +535,17 @@ bool AtcaIopADC::SetConfiguredDatabase(StructuredDataI& data) {
                     }
                 }
                 /*
-                else if (isAdcSim) {
-                    //How many samples to read for each cycle?
-                    if (adcSamplesPerCycle == 0u) {
-                        adcSamplesPerCycle = nSamples;
-                    }
-                    else {
-                        if (adcSamplesPerCycle != nSamples) {
-                            ok = false;
-                            REPORT_ERROR(ErrorManagement::ParametersError, "All the ADC signals shall have the same number of samples");
-                        }
-                    }
+                   else if (isAdcSim) {
+                //How many samples to read for each cycle?
+                if (adcSamplesPerCycle == 0u) {
+                adcSamplesPerCycle = nSamples;
+                }
+                else {
+                if (adcSamplesPerCycle != nSamples) {
+                ok = false;
+                REPORT_ERROR(ErrorManagement::ParametersError, "All the ADC signals shall have the same number of samples");
+                }
+                }
 
                 }
                 */
@@ -551,10 +566,10 @@ bool AtcaIopADC::SetConfiguredDatabase(StructuredDataI& data) {
         timerPeriodUsecTime = static_cast<uint32>(periodUsec);
         float64 sleepTimeT = (static_cast<float64>(HighResolutionTimer::Frequency()) / cycleFrequency);
         sleepTimeTicks = static_cast<uint64>(sleepTimeT);
-/*
- * [Information - AtcaIopADC.cpp:548]: The timer will be set using a cycle frequency of 10000.000000 Hz
- * [Information - AtcaIopADC.cpp:554]: The timer will be set using a sleepTimeTicks of 100000 (ns)
- */
+        /*
+         * [Information - AtcaIopADC.cpp:548]: The timer will be set using a cycle frequency of 10000.000000 Hz
+         * [Information - AtcaIopADC.cpp:554]: The timer will be set using a sleepTimeTicks of 100000 (ns)
+         */
         REPORT_ERROR(ErrorManagement::Information,
                 "The timer will be set using a sleepTimeTicks of %d (ns)", sleepTimeTicks);
     }
@@ -564,8 +579,8 @@ bool AtcaIopADC::SetConfiguredDatabase(StructuredDataI& data) {
         ok = (adcFrequency == static_cast<uint32>(totalNumberOfSamplesPerSecond));
         if (!ok) {
             REPORT_ERROR(ErrorManagement::ParametersError,
-                "The adcSamplesPerCycle * cycleFrequency (%u) shall be equal to the ADCs acquisition frequency (%u)",
-                totalNumberOfSamplesPerSecond, adcFrequency);
+                    "The adcSamplesPerCycle * cycleFrequency (%u) shall be equal to the ADCs acquisition frequency (%u)",
+                    totalNumberOfSamplesPerSecond, adcFrequency);
         }
     }
     return ok;
@@ -640,6 +655,7 @@ bool AtcaIopADC::PrepareNextState(const char8* const currentStateName, const cha
 
 /*lint -e{715}  [MISRA C++ Rule 0-1-11], [MISRA C++ Rule 0-1-12]. Justification: the method sleeps for the given period irrespectively of the input info.*/
 ErrorManagement::ErrorType AtcaIopADC::Execute(ExecutionInfo& info) {
+    DMA_CH1_PCKT *pdma = (DMA_CH1_PCKT *) mappedDmaBase;
     if (lastTimeTicks == 0u) {
         lastTimeTicks = HighResolutionTimer::Counter();
     }
@@ -661,7 +677,7 @@ ErrorManagement::ErrorType AtcaIopADC::Execute(ExecutionInfo& info) {
     float32 totalSleepTime = static_cast<float32>(static_cast<float64>(deltaTicks) * HighResolutionTimer::Period());
 #ifdef DEBUG_POLL    
     if((execCounter++)%DEBUG_POLL == 0) {
-           REPORT_ERROR(ErrorManagement::Information, "Executor sleepTime: %f pollTimout: %d", totalSleepTime, pollTimout);
+        REPORT_ERROR(ErrorManagement::Information, "Executor sleepTime: %f pollTimout: %d", totalSleepTime, pollTimout);
     }
 #endif
     if (sleepNature == Busy) {
@@ -677,13 +693,13 @@ ErrorManagement::ErrorType AtcaIopADC::Execute(ExecutionInfo& info) {
         if(PollDma(startTicks + deltaTicks + sleepTimeTicks + 10000u) < 0)
             pollTimout++; // TODO check max wait
         /*
-        else {
-            float32 totalSleepTime = static_cast<float32>(static_cast<float64>(deltaTicks) * HighResolutionTimer::Period());
-            uint32 busyPercentage = (100u - sleepPercentage);
-            float32 busyTime = totalSleepTime * (static_cast<float32>(busyPercentage) / 100.F);
-            Sleep::SemiBusy(totalSleepTime, busyTime);
-        }
-        */
+           else {
+           float32 totalSleepTime = static_cast<float32>(static_cast<float64>(deltaTicks) * HighResolutionTimer::Period());
+           uint32 busyPercentage = (100u - sleepPercentage);
+           float32 busyTime = totalSleepTime * (static_cast<float32>(busyPercentage) / 100.F);
+           Sleep::SemiBusy(totalSleepTime, busyTime);
+           }
+           */
     }
     else {
         float32 sleepTime = static_cast<float32>(static_cast<float64>(deltaTicks) * HighResolutionTimer::Period());
@@ -693,20 +709,22 @@ ErrorManagement::ErrorType AtcaIopADC::Execute(ExecutionInfo& info) {
 
     ErrorManagement::ErrorType err = synchSem.Post();
     counterAndTimer[0] += nCycles;
-    //counterAndTimer[1] = counterAndTimer[0] * timerPeriodUsecTime;
-    counterAndTimer[1] = mappedDmaBase[oldestBufferIdx * RT_PCKT_SIZE] * timerPeriodUsecTime;
+    //counterAndTimer[1] = mappedDmaBase[oldestBufferIdx * RT_PCKT_SIZE] * timerPeriodUsecTime;
+    counterAndTimer[1] = pdma[oldestBufferIdx].head_time_cnt * timerPeriodUsecTime;
     // Get adc data from DMA packet
     uint32 k;
     uint32 s;
     for (k=0u; k < ATCA_IOP_N_ADCs ; k++) {
-        adcValues[k] = (mappedDmaBase[oldestBufferIdx * RT_PCKT_SIZE +
-                IOP_ADC_OFFSET + k] ) / (1<<14);
+        //adcValues[k] = (mappedDmaBase[oldestBufferIdx * RT_PCKT_SIZE +
+        //        IOP_ADC_OFFSET + k] ) / (1<<14);
+        adcValues[k] = pdma[oldestBufferIdx].adc_decim_data[k] / (1<<14);
     }
-    int64 * mappedDmaBase64 = (int64 *) mappedDmaBase;
+    //int64 * mappedDmaBase64 = (int64 *) mappedDmaBase;
     for (k=0u; k < ATCA_IOP_N_INTEGRALS ; k++) {
-        adcIntegralValues[k] = mappedDmaBase64[oldestBufferIdx * RT_PCKT64_SIZE + IOP_ADC_INTEG_OFFSET + k];
+        adcIntegralValues[k] = pdma[oldestBufferIdx].adc_integ_data[k];
+        //mappedDmaBase64[oldestBufferIdx * RT_PCKT64_SIZE + IOP_ADC_INTEG_OFFSET + k];
     }
-    
+
     float64 t = counterAndTimer[1];
     t /= 1e6;
     // Compute simulated Sinus Signals
@@ -729,39 +747,42 @@ uint32 AtcaIopADC::GetSleepPercentage() const {
  * */
 
 int32 AtcaIopADC::PollDma(uint64 waitLimitTicks) const {
-        uint32 buffIdx = oldestBufferIdx;
-        uint32  oldBufferFooter = mappedDmaBase[buffIdx * RT_PCKT_SIZE + 62];
-        uint32  freshBufferFooter = oldBufferFooter;
-        uint64 actualTime = HighResolutionTimer::Counter();
-        while (freshBufferFooter == oldBufferFooter) {
-            if(actualTime > waitLimitTicks) {
-                return -1;
-            }
-            actualTime = HighResolutionTimer::Counter();
-            freshBufferFooter = mappedDmaBase[buffIdx * RT_PCKT_SIZE + 62];
+    //uint32  oldBufferFooter = mappedDmaBase[buffIdx * RT_PCKT_SIZE + 62];
+    DMA_CH1_PCKT *pdma = (DMA_CH1_PCKT *) mappedDmaBase;
+    uint32  oldBufferFooter = pdma[oldestBufferIdx].foot_time_cnt;
+    volatile uint32  freshBufferFooter = oldBufferFooter;
+    //uint32 buffIdx = oldestBufferIdx;
+    uint64 actualTime = HighResolutionTimer::Counter();
+    while (freshBufferFooter == oldBufferFooter) {
+        if(actualTime > waitLimitTicks) {
+            return -1;
         }
-        uint32 headTimeMark = mappedDmaBase[buffIdx * RT_PCKT_SIZE];
-        if(headTimeMark != freshBufferFooter)
-        {
-            //currentBufferIdx = buffIdx;
-            //currentMasterHeader   = pdma[currentBufferIdx].head_time_cnt;
-            return -2;
-        }
-        return buffIdx;
+        actualTime = HighResolutionTimer::Counter();
+        //freshBufferFooter = mappedDmaBase[buffIdx * RT_PCKT_SIZE + 62];
+        freshBufferFooter = pdma[oldestBufferIdx].foot_time_cnt;
+    }
+    //uint32 headTimeMark = mappedDmaBase[buffIdx * RT_PCKT_SIZE];
+    uint32 headTimeMark = pdma[oldestBufferIdx].head_time_cnt ;
+    if(headTimeMark != freshBufferFooter)
+    {
+        return -2;
+    }
+    return oldestBufferIdx;
 }
 uint32 AtcaIopADC::GetOldestBufferIdx() const {
-        volatile uint32 oldestBufferHeader = mappedDmaBase[0];
-        uint32 buffIdx = 0u;
+    DMA_CH1_PCKT *pdma = (DMA_CH1_PCKT *) mappedDmaBase;
+    uint32 buffIdx = 0u;
 
-        volatile uint32 header = mappedDmaBase[0];
-        for (uint32 dmaIndex = 1u; dmaIndex < NUMBER_OF_BUFFERS; dmaIndex++) {
-            header = mappedDmaBase[dmaIndex * RT_PCKT_SIZE];
-            if (header < oldestBufferHeader) {
-                oldestBufferHeader = header;
-                buffIdx  = dmaIndex;
-            }
+    volatile uint32 header = pdma[buffIdx].head_time_cnt;
+    volatile uint32 oldestBufferHeader = header;
+    for (uint32 dmaIndex = 1u; dmaIndex < NUMBER_OF_BUFFERS; dmaIndex++) {
+        header = pdma[dmaIndex].head_time_cnt;
+        if (header < oldestBufferHeader) {
+            oldestBufferHeader = header;
+            buffIdx  = dmaIndex;
         }
-        return buffIdx;
+    }
+    return buffIdx;
 }
 
 CLASS_REGISTER(AtcaIopADC, "1.0")

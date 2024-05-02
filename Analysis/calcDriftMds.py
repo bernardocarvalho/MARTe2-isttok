@@ -12,16 +12,25 @@ import argparse
 ADC_CHANNELS = 14 # channels stored in ISTTOK
 DECIM_RATE = 200
 
+MDSTREENAME = 'rtappisttok'
+
 def main(args):
     mdsPulseNumber = args.shot
 
-    mdsTreeName = 'rtappisttok'
     try:
-        tree = Tree(mdsTreeName, mdsPulseNumber)
+        if(mdsPulseNumber > 0):
+            tree = Tree(MDSTREENAME, mdsPulseNumber)
+        else:
+            tree = Tree(MDSTREENAME)
+            mdsPulseNumber = tree.getCurrent()
+            tree.close()
+            tree = Tree(MDSTREENAME, mdsPulseNumber)
+
     except:
-        print(f'Failed opening {mdsTreeName} for pulse number {mdsPulseNumber:d}')
+        print(f'Failed opening {MDSTREENAME} for pulse number {mdsPulseNumber:d}')
         exit()
 
+    print(f'Openpening {MDSTREENAME} for pulse number {mdsPulseNumber:d}')
 # add plt.addLegend() BEFORE you create the curves.
 #mdsNode = tree.getNode("ATCAIOP1.ADC0RAW")
 #dataAdc = mdsNode.getData().data()
@@ -59,7 +68,7 @@ if __name__ == '__main__':
     #parser.add_argument('-l','--list', nargs='+')
     parser.add_argument('-c', '--crange', nargs='+',type=int, help='Channel plots (1 12)',default=[1, 12])
     parser.add_argument('-i', '--irange', nargs='+',type=int,default=[1, 12])
-    parser.add_argument('-s', '--shot', type=int, help='Mds+ pulse Number ([1, ...])', default=100)
+    parser.add_argument('-s', '--shot', type=int, help='Mds+ pulse Number ([1, ...])', default=0)
     #parser.add_argument('-e', '--averages', action='store_true', help='Calc averages')
 #parser.add_argument('-w', '--drift', action='store_true', help='Calc drifts')
 #, default='')
