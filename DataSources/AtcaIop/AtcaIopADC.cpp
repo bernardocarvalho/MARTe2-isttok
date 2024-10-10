@@ -46,6 +46,7 @@
 /*---------------------------------------------------------------------------*/
 namespace MARTe {
 
+    const uint32 POLL_EXTRA_WAIT = 10000u;
     //const float64 ADC_SIMULATOR_PI = 3.14159265359;
     const uint32 IOP_ADC_OFFSET = 2u; // in DMA Data packet in 32b. First 2 are counter.
     const uint32 IOP_ADC_INTEG_OFFSET = 16u;  // in 64 bit words
@@ -107,18 +108,20 @@ AtcaIopADC::AtcaIopADC() :
         timerPeriodUsecTime = 0u;
         counterAndTimer[0] = 0u;
         counterAndTimer[1] = 0u;
+        timeoutCount = 0u;
+        timeoutMax = 0u;
         sleepNature = Busy;
         sleepPercentage = 0u;
-        execCounter = 0u;
-        pollTimout = 0u;
+        //execCounter = 0u;
+        //pollTimout = 0u;
         adcPeriod = 0.;
         uint32 k;
-        for (k=0u; k<ATCA_IOP_N_ADCs; k++) {
+        for (k=0u; k < ATCA_IOP_N_ADCs; k++) {
             adcValues[k] = 0u;
             electricalOffsets[k] = 0u;
             wiringOffsets[k] = 0.0;
         }
-        for (k=0u; k<ATCA_IOP_N_INTEGRALS; k++) {
+        for (k=0u; k < ATCA_IOP_N_INTEGRALS; k++) {
             adcIntegralValues[k] = 0u;
         }
 
@@ -503,9 +506,7 @@ bool AtcaIopADC::SetConfiguredDatabase(StructuredDataI& data) {
             if (ok) {
                 isCounter = (signalIdx == 0u);
                 isTime = (signalIdx == 1u);
-                //isAdcDecim = (signalIdx == 2u);
-                isAdc= (signalIdx < ATCA_IOP_N_TIMCNT + ATCA_IOP_N_ADCs + ATCA_IOP_N_INTEGRALS);
-                //isAdcSim = (signalIdx < ATCA_IOP_N_SIGNALS);
+                isAdc = (signalIdx < ATCA_IOP_N_TIMCNT + ATCA_IOP_N_ADCs + ATCA_IOP_N_INTEGRALS);
                 if (isCounter) {
                     if (nSamples > 1u) {
                         ok = false;
@@ -534,21 +535,6 @@ bool AtcaIopADC::SetConfiguredDatabase(StructuredDataI& data) {
                         REPORT_ERROR(ErrorManagement::ParametersError, "The ATCA-IOP signals shall have one and only one sample");
                     }
                 }
-                /*
-                   else if (isAdcSim) {
-                //How many samples to read for each cycle?
-                if (adcSamplesPerCycle == 0u) {
-                adcSamplesPerCycle = nSamples;
-                }
-                else {
-                if (adcSamplesPerCycle != nSamples) {
-                ok = false;
-                REPORT_ERROR(ErrorManagement::ParametersError, "All the ADC signals shall have the same number of samples");
-                }
-                }
-
-                }
-                */
                 else {}
             }
         }
@@ -598,6 +584,12 @@ bool AtcaIopADC::GetSignalMemoryBuffer(const uint32 signalIdx, const uint32 buff
     }
     else if (signalIdx == 1u) {
         signalAddress = &counterAndTimer[1];
+    }
+    else if (signalIdx == 2u) {
+        signalAddress = &timeoutCount;
+    }
+    else if (signalIdx == 3u) {
+        signalAddress = &timeoutMax;
     }
     else if (signalIdx < ATCA_IOP_N_TIMCNT + ATCA_IOP_N_ADCs ) {
         signalAddress = &adcValues[signalIdx - ATCA_IOP_N_TIMCNT];
@@ -671,27 +663,31 @@ ErrorManagement::ErrorType AtcaIopADC::Execute(ExecutionInfo& info) {
 
     //Sleep until the next period. Cannot be < 0 due to while(lastTimeTicks < startTicks) above
     uint64 sleepTicksCorrection = (startTicks - lastTimeTicks);
+    //uint64 deltaTicks = sleepTimeTicks - (startTicks - lastTimeTicks);
     uint64 deltaTicks = sleepTimeTicks - sleepTicksCorrection;
+
+    timeoutMax = deltaTicks; // debug
     //volatile int32 currentDMA = 0u;
     oldestBufferIdx = GetOldestBufferIdx();
     float32 totalSleepTime = static_cast<float32>(static_cast<float64>(deltaTicks) * HighResolutionTimer::Period());
+    /*
 #ifdef DEBUG_POLL    
     if((execCounter++)%DEBUG_POLL == 0) {
         REPORT_ERROR(ErrorManagement::Information, "Executor sleepTime: %f pollTimout: %d", totalSleepTime, pollTimout);
     }
 #endif
+*/
     if (sleepNature == Busy) {
         if (sleepPercentage > 0u) {
             //float32 sleepTime = totalSleepTime * 0.5;
             float32 sleepTime = totalSleepTime * (static_cast<float32>(sleepPercentage) / 100.F);
             Sleep::NoMore(sleepTime);
-            //currentDMA = 
             //if(PollDma(startTicks + deltaTicks + 100000u) < 0)
-            //while ((HighResolutionTimer::Counter() - startTicks) < deltaTicks) {
-            //}
         }
-        if(PollDma(startTicks + deltaTicks + sleepTimeTicks + 10000u) < 0)
-            pollTimout++; // TODO check max wait
+        if(PollDma(startTicks + deltaTicks + sleepTimeTicks + POLL_EXTRA_WAIT) < 0){
+            //pollTimout++; // TODO check max wait
+            timeoutCount++;             //
+        }
         /*
            else {
            float32 totalSleepTime = static_cast<float32>(static_cast<float64>(deltaTicks) * HighResolutionTimer::Period());
@@ -747,7 +743,7 @@ uint32 AtcaIopADC::GetSleepPercentage() const {
  * */
 
 int32 AtcaIopADC::PollDma(uint64 waitLimitTicks) const {
-    //uint32  oldBufferFooter = mappedDmaBase[buffIdx * RT_PCKT_SIZE + 62];
+
     DMA_CH1_PCKT *pdma = (DMA_CH1_PCKT *) mappedDmaBase;
     uint32  oldBufferFooter = pdma[oldestBufferIdx].foot_time_cnt;
     volatile uint32  freshBufferFooter = oldBufferFooter;
@@ -758,7 +754,6 @@ int32 AtcaIopADC::PollDma(uint64 waitLimitTicks) const {
             return -1;
         }
         actualTime = HighResolutionTimer::Counter();
-        //freshBufferFooter = mappedDmaBase[buffIdx * RT_PCKT_SIZE + 62];
         freshBufferFooter = pdma[oldestBufferIdx].foot_time_cnt;
     }
     //uint32 headTimeMark = mappedDmaBase[buffIdx * RT_PCKT_SIZE];

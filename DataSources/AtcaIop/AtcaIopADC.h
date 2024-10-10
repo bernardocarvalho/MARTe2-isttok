@@ -52,10 +52,9 @@ namespace MARTe {
      */
     const uint32 ATCA_IOP_MAX_CHANNELS = 32u;
     
-    const uint32 ATCA_IOP_N_TIMCNT = 2u;
+    const uint32 ATCA_IOP_N_TIMCNT = 4u;
     const uint32 ATCA_IOP_N_ADCs = 16u;
     const uint32 ATCA_IOP_N_INTEGRALS = ATCA_IOP_N_ADCs;
-    //const uint32 ADC_SIMULATOR_N_ADCs = 2u;
     const uint32 ATCA_IOP_N_SIGNALS = (ATCA_IOP_N_TIMCNT + ATCA_IOP_N_ADCs +
             ATCA_IOP_N_INTEGRALS);
     /**
@@ -77,11 +76,17 @@ namespace MARTe {
      *     ADCFrequency = 2000000
      *     Signals = {
      *         Counter = {
-     *             Type = uint32 //int32 also supported
+     *             Type = uint32
      *         }
      *         Time = {
-     *             Type = uint32 //int32 also supported
+     *             Type = uint32
      *             Frequency = 1000
+     *         }
+     *         TimeoutCount = {
+     *             Type = uint32 
+     *         }
+     *         TimeoutMax = {
+     *             Type = uint32
      *         }
      *         ADC0 = {
      *             Type = uint32
@@ -297,13 +302,23 @@ namespace MARTe {
             /**
              * Debugging
              */
-            uint32 execCounter;
-            uint32 pollTimout;
+            //uint32 execCounter;
+            //uint32 pollTimout;
 
             /**
              * Current counter and timer
              */
             uint32 counterAndTimer[2];
+
+            /**
+             * Timeout counter 
+             */
+            uint32 timeoutCount;
+
+            /**
+             * Timeout counter 
+             */
+            uint32 timeoutMax;
 
             /**
              * ADC values
