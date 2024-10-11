@@ -126,4 +126,23 @@ $ caput ISTTOK:central:MARTe2-Command 0
 ```
 
 
+### [Isolate](https://docs.redhat.com/en/documentation/red_hat_enterprise_linux_for_real_time/7/html/tuning_guide/isolating_cpus_using_tuned-profiles-realtime) CPUs 
+
+Install tuned, tuned-profiles-cpu-partitioning, tuned-utils packages
+
+`numactl --hardware`
+
+In file `/etc/tuned/cpu-partitioning-variables.conf`,  set:
+isolated_cores=6-11
+no_balance_cores=6-11
+
+As root:
+```bash
+# tuned-adm profile cpu-partitioning
+# reboot
+...
+# tuned-adm profile_info 
+
+```
+
 
