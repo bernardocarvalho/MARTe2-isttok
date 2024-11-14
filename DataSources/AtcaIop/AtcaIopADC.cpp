@@ -46,7 +46,7 @@
 /*---------------------------------------------------------------------------*/
 namespace MARTe {
 
-    const uint32 POLL_EXTRA_WAIT = 10000u;
+    const uint32 POLL_EXTRA_WAIT = 50000u; // 50 us 
     //const float64 ADC_SIMULATOR_PI = 3.14159265359;
     const uint32 IOP_ADC_OFFSET = 2u; // in DMA Data packet in 32b. First 2 are counter.
     const uint32 IOP_ADC_INTEG_OFFSET = 16u;  // in 64 bit words
@@ -135,7 +135,7 @@ AtcaIopADC::~AtcaIopADC() {
     if (boardFileDescriptor != -1) {
         // Synchronize DMA before accessing board registers
         oldestBufferIdx = GetOldestBufferIdx();
-        PollDma(HighResolutionTimer::Counter() + 2000000); //  wait max 2ms
+        PollDmaBuff(2000000u); //  wait max 2ms
         ioctl(boardFileDescriptor, ATCA_PCIE_IOPT_STREAM_DISABLE);
         ioctl(boardFileDescriptor, ATCA_PCIE_IOPT_DMA_DISABLE);
         uint32 statusReg = 0;
@@ -441,7 +441,7 @@ bool AtcaIopADC::SetConfiguredDatabase(StructuredDataI& data) {
     for (i=0u; i < ATCA_IOP_N_ADCs ; i++) {
         eo_conf.offset[i] = electricalOffsets[i];
         wo_conf.offset[i] = static_cast<int32>(wiringOffsets[i] * 65536);
-        REPORT_ERROR(ErrorManagement::Information, "WiringOffset %d: %d", i, wo_conf.offset[i]);
+       // REPORT_ERROR(ErrorManagement::Information, "WiringOffset %d: %d", i, wo_conf.offset[i]);
     }
     rc = ioctl(boardFileDescriptor, ATCA_PCIE_IOPS_EO_OFFSETS, &eo_conf);
     rc = ioctl(boardFileDescriptor, ATCA_PCIE_IOPS_WO_OFFSETS, &wo_conf);
@@ -463,7 +463,7 @@ bool AtcaIopADC::SetConfiguredDatabase(StructuredDataI& data) {
     int32 currentDMA = 0u;// = CurrentBufferIndex(200);
     for (i = 0u; i < 1; i++) {
         oldestBufferIdx = GetOldestBufferIdx();
-        currentDMA = PollDma(HighResolutionTimer::Counter() + 2000000u); //  wait max 2ms
+        currentDMA = PollDmaBuff(2000000u); //  wait max 2ms
         REPORT_ERROR(ErrorManagement::Information, "AtcaIopADC::CurrentBufferIndex: %d, Idx: %d", currentDMA, oldestBufferIdx);
     }
     REPORT_ERROR(ErrorManagement::Information, "AtcaIopADC::CurrentBufferIndex: %d", currentDMA);
@@ -637,9 +637,11 @@ bool AtcaIopADC::PrepareNextState(const char8* const currentStateName, const cha
         ok = executor.Start();
         REPORT_ERROR(ErrorManagement::Information, "Executor Start");
     }
+    /*
     if (executor.GetStatus() == EmbeddedThreadI::RunningState) {
         REPORT_ERROR(ErrorManagement::Information, " ADC currentStateName   %s, nextStateName %s", currentStateName, nextStateName);
     }
+    */
     counterAndTimer[0] = 0u;
     //counterAndTimer[1] = 0u;
     return ok;
@@ -670,21 +672,15 @@ ErrorManagement::ErrorType AtcaIopADC::Execute(ExecutionInfo& info) {
     //volatile int32 currentDMA = 0u;
     oldestBufferIdx = GetOldestBufferIdx();
     float32 totalSleepTime = static_cast<float32>(static_cast<float64>(deltaTicks) * HighResolutionTimer::Period());
-    /*
-#ifdef DEBUG_POLL    
-    if((execCounter++)%DEBUG_POLL == 0) {
-        REPORT_ERROR(ErrorManagement::Information, "Executor sleepTime: %f pollTimout: %d", totalSleepTime, pollTimout);
-    }
-#endif
-*/
+
     if (sleepNature == Busy) {
         if (sleepPercentage > 0u) {
             //float32 sleepTime = totalSleepTime * 0.5;
             float32 sleepTime = totalSleepTime * (static_cast<float32>(sleepPercentage) / 100.F);
             Sleep::NoMore(sleepTime);
-            //if(PollDma(startTicks + deltaTicks + 100000u) < 0)
+            //if(PollDmaBuff(startTicks + deltaTicks + 100000u) < 0)
         }
-        if(PollDma(startTicks + deltaTicks + sleepTimeTicks + POLL_EXTRA_WAIT) < 0){
+        if(PollDmaBuff(deltaTicks + POLL_EXTRA_WAIT) < 0){
             //pollTimout++; // TODO check max wait
             timeoutCount++;             //
         }
@@ -742,16 +738,16 @@ uint32 AtcaIopADC::GetSleepPercentage() const {
  * waitLimitTicks in ns
  * */
 
-int32 AtcaIopADC::PollDma(uint64 waitLimitTicks) const {
+int32 AtcaIopADC::PollDmaBuff(uint64 maxWaitTicks) const {
 
     DMA_CH1_PCKT *pdma = (DMA_CH1_PCKT *) mappedDmaBase;
     uint32  oldBufferFooter = pdma[oldestBufferIdx].foot_time_cnt;
     volatile uint32  freshBufferFooter = oldBufferFooter;
-    //uint32 buffIdx = oldestBufferIdx;
     uint64 actualTime = HighResolutionTimer::Counter();
+    uint64 waitLimitTicks = actualTime + maxWaitTicks;
     while (freshBufferFooter == oldBufferFooter) {
         if(actualTime > waitLimitTicks) {
-            return -1;
+            return -1; // Timeout
         }
         actualTime = HighResolutionTimer::Counter();
         freshBufferFooter = pdma[oldestBufferIdx].foot_time_cnt;
@@ -760,9 +756,9 @@ int32 AtcaIopADC::PollDma(uint64 waitLimitTicks) const {
     uint32 headTimeMark = pdma[oldestBufferIdx].head_time_cnt ;
     if(headTimeMark != freshBufferFooter)
     {
-        return -2;
+        return -2; // Error in Head/Foot data
     }
-    return oldestBufferIdx;
+    return 0; //oldestBufferIdx;
 }
 uint32 AtcaIopADC::GetOldestBufferIdx() const {
     DMA_CH1_PCKT *pdma = (DMA_CH1_PCKT *) mappedDmaBase;

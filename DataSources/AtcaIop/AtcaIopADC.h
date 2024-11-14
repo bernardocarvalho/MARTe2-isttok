@@ -438,7 +438,7 @@ namespace MARTe {
              */
             int32 GetLatestBufferIndex() const;
             uint32 GetOldestBufferIdx() const;
-            int32 PollDma(uint64 waitLimitTicks) const;
+            int32 PollDmaBuff(uint64 maxWaitTicks) const;
 
             /**
              * filter to receive the RPC which ...
