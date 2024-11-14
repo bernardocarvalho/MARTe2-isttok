@@ -26,6 +26,11 @@ put CLOCK_FREQ "20000"
 add node .CHANNELS
 set def .CHANNELS
 add node .INPUT_00
+
+add node .INPUT_12
+add node .INPUT_13
+add node .INPUT_14
+add node .INPUT_15
 set def  .INPUT_00
 add node RAW/usage=signal
 add node GAIN/usage=numeric
@@ -156,6 +161,10 @@ add node OFFSET/usage=numeric
 put OFFSET "0.0"
 add node SIGNAL/usage=signal
 put SIGNAL "BUILD_SIGNAL(GAIN*(RAW - OFFSET),RAW)"
+
+set def \ISTTOKSDAS::TOP.HARDWARE.ATCA1.IOC1.CHANNELS
+set def \ISTTOKSDAS::TOP.HARDWARE.ATCA1.IOC1.CHANNELS.INPUT_12
+add node IOCINTCHAN/usage=subtree
 
 
 set def \ISTTOKSDAS::TOP.INP
