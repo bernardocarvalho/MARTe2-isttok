@@ -17,7 +17,8 @@ from MdsImportSdas import mds_writer, plot_signals
 mdsTreeName = 'isttoksdas'
 
 
-MDS_NODEFMT = "\\TOP.HARDWARE.ATCA1.IOC1.CHANNELS.INPUT_{}.RAW"
+MDS_NODEFMT = "\\TOP.HARDWARE.ATCA1.IOC_0.CHANNEL_{}.RAW"
+# MDS_NODEFMT = "\\TOP.HARDWARE.ATCA1.IOC1.CHANNELS.INPUT_{}.RAW"
 SDAS_NODEFMT = 'MARTE_NODE_IVO3.DataCollection.Channel_{}'
 
 NUM_PROBES = 12
@@ -27,7 +28,8 @@ def build_import_table():
     table = []
     for n in range(NUM_PROBES):
         sdas_str = SDAS_NODEFMT.format(str(166 + n).zfill(3))
-        mds_str = MDS_NODEFMT.format(str(n).zfill(2))
+        # mds_str = MDS_NODEFMT.format(str(n).zfill(2))
+        mds_str = MDS_NODEFMT.format(str(n))
         # print(sdas_str)
         nd = {'sdas': sdas_str, 'mds': mds_str,
               'name': f'Mirnov coil no. {n+1}'}

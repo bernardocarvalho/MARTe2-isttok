@@ -112,13 +112,20 @@ private:
     /**
      * The input signals
      */
-    MARTe::float32 **inputSignals;
+//    MARTe::float32 **inputSignals;
+
+    MARTe::float32 *inputElectricTop;
+    MARTe::float32 *inputElectricInner;
+    MARTe::float32 *inputElectricOuter;
+    MARTe::float32 *inputElectricBottom;
 
     /**
      * The output signals
      */
-    MARTe::float32 **outputSignals;
-    MARTe::float32 *outputSignal1;
+   // MARTe::float32 **outputSignals;
+    //MARTe::float32 *outputSignal1;
+    MARTe::float32 *outputEpR;
+    MARTe::float32 *outputEpZ;
 
 
     /**

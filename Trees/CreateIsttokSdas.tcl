@@ -1,6 +1,5 @@
 edit isttoksdas/new
 
-#add node .ATCAIOP1
 add node .INP
 add node .REFS
 add node .ERRORS
@@ -16,155 +15,11 @@ add node .ATCA1
 add node .ATCA2
 # set def \ISTTOKSDAS::TOP.HARDWARE.ATCA1
 set def .ATCA1
-add node .IOC1
-set def .IOC1
-add node COMMENT/usage=text
-add node SLOT/usage=numeric
-add node CLOCK_FREQ/usage=numeric
-put CLOCK_FREQ "20000"
-
-add node .CHANNELS
-set def .CHANNELS
-add node .INPUT_00
-
-add node .INPUT_12
-add node .INPUT_13
-add node .INPUT_14
-add node .INPUT_15
-set def  .INPUT_00
-add node RAW/usage=signal
-add node GAIN/usage=numeric
-# put GAIN "0.000076294"
-put GAIN "1.0"
-add node OFFSET/usage=numeric
-put OFFSET "0.0"
-add node SIGNAL/usage=signal
-put SIGNAL "BUILD_SIGNAL(GAIN*(RAW - OFFSET),RAW)"
-
-set def \ISTTOKSDAS::TOP.HARDWARE.ATCA1.IOC1.CHANNELS
-add node .INPUT_01
-set def  .INPUT_01
-add node RAW/usage=signal
-add node GAIN/usage=numeric
-put GAIN "1.0"
-add node OFFSET/usage=numeric
-put OFFSET "0.0"
-add node SIGNAL/usage=signal
-put SIGNAL "BUILD_SIGNAL(GAIN*(RAW - OFFSET),RAW)"
-
-set def \ISTTOKSDAS::TOP.HARDWARE.ATCA1.IOC1.CHANNELS
-add node .INPUT_02
-set def  .INPUT_02
-add node RAW/usage=signal
-add node GAIN/usage=numeric
-put GAIN "1.0"
-add node OFFSET/usage=numeric
-put OFFSET "0.0"
-add node SIGNAL/usage=signal
-put SIGNAL "BUILD_SIGNAL(GAIN*(RAW - OFFSET),RAW)"
-
-set def \ISTTOKSDAS::TOP.HARDWARE.ATCA1.IOC1.CHANNELS
-add node .INPUT_03
-set def  .INPUT_03
-add node RAW/usage=signal
-add node GAIN/usage=numeric
-put GAIN "1.0"
-add node OFFSET/usage=numeric
-put OFFSET "0.0"
-add node SIGNAL/usage=signal
-put SIGNAL "BUILD_SIGNAL(GAIN*(RAW - OFFSET),RAW)"
-
-set def \ISTTOKSDAS::TOP.HARDWARE.ATCA1.IOC1.CHANNELS
-add node .INPUT_04
-set def  .INPUT_04
-add node RAW/usage=signal
-add node GAIN/usage=numeric
-put GAIN "1.0"
-add node OFFSET/usage=numeric
-put OFFSET "0.0"
-add node SIGNAL/usage=signal
-put SIGNAL "BUILD_SIGNAL(GAIN*(RAW - OFFSET),RAW)"
-
-set def \ISTTOKSDAS::TOP.HARDWARE.ATCA1.IOC1.CHANNELS
-add node .INPUT_05
-set def  .INPUT_05
-add node RAW/usage=signal
-add node GAIN/usage=numeric
-put GAIN "1.0"
-add node OFFSET/usage=numeric
-put OFFSET "0.0"
-add node SIGNAL/usage=signal
-put SIGNAL "BUILD_SIGNAL(GAIN*(RAW - OFFSET),RAW)"
-
-set def \ISTTOKSDAS::TOP.HARDWARE.ATCA1.IOC1.CHANNELS
-add node .INPUT_06
-set def  .INPUT_06
-add node RAW/usage=signal
-add node GAIN/usage=numeric
-put GAIN "1.0"
-add node OFFSET/usage=numeric
-put OFFSET "0.0"
-add node SIGNAL/usage=signal
-put SIGNAL "BUILD_SIGNAL(GAIN*(RAW - OFFSET),RAW)"
-
-set def \ISTTOKSDAS::TOP.HARDWARE.ATCA1.IOC1.CHANNELS
-add node .INPUT_07
-set def  .INPUT_07
-add node RAW/usage=signal
-add node GAIN/usage=numeric
-put GAIN "1.0"
-add node OFFSET/usage=numeric
-put OFFSET "0.0"
-add node SIGNAL/usage=signal
-put SIGNAL "BUILD_SIGNAL(GAIN*(RAW - OFFSET),RAW)"
-
-set def \ISTTOKSDAS::TOP.HARDWARE.ATCA1.IOC1.CHANNELS
-add node .INPUT_08
-set def  .INPUT_08
-add node RAW/usage=signal
-add node GAIN/usage=numeric
-put GAIN "1.0"
-add node OFFSET/usage=numeric
-put OFFSET "0.0"
-add node SIGNAL/usage=signal
-put SIGNAL "BUILD_SIGNAL(GAIN*(RAW - OFFSET),RAW)"
-
-set def \ISTTOKSDAS::TOP.HARDWARE.ATCA1.IOC1.CHANNELS
-add node .INPUT_09
-set def  .INPUT_09
-add node RAW/usage=signal
-add node GAIN/usage=numeric
-put GAIN "1.0"
-add node OFFSET/usage=numeric
-put OFFSET "0.0"
-add node SIGNAL/usage=signal
-put SIGNAL "BUILD_SIGNAL(GAIN*(RAW - OFFSET),RAW)"
-
-set def \ISTTOKSDAS::TOP.HARDWARE.ATCA1.IOC1.CHANNELS
-add node .INPUT_10
-set def  .INPUT_10
-add node RAW/usage=signal
-add node GAIN/usage=numeric
-put GAIN "1.0"
-add node OFFSET/usage=numeric
-put OFFSET "0.0"
-add node SIGNAL/usage=signal
-put SIGNAL "BUILD_SIGNAL(GAIN*(RAW - OFFSET),RAW)"
-
-set def \ISTTOKSDAS::TOP.HARDWARE.ATCA1.IOC1.CHANNELS
-add node .INPUT_11
-set def  .INPUT_11
-add node RAW/usage=signal
-add node GAIN/usage=numeric
-put GAIN "1.0"
-add node OFFSET/usage=numeric
-put OFFSET "0.0"
-add node SIGNAL/usage=signal
-put SIGNAL "BUILD_SIGNAL(GAIN*(RAW - OFFSET),RAW)"
-
-set def \ISTTOKSDAS::TOP.HARDWARE.ATCA1.IOC1.CHANNELS
-set def \ISTTOKSDAS::TOP.HARDWARE.ATCA1.IOC1.CHANNELS.INPUT_12
-add node IOCINTCHAN/usage=subtree
+add node IOC_0/model=IOCMIMORT
+add node IOC_1/model=IOCMIMORT
+set def \ISTTOKSDAS::TOP.HARDWARE.ATCA1.IOC_1"
+put SLOT "2"
+# put CLOCK_FREQ "20000"
 
 
 set def \ISTTOKSDAS::TOP.INP

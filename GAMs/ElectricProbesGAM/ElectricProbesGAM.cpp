@@ -43,19 +43,27 @@ namespace MARTeIsttok {
                 GAM(),
                 MessageI() {
         gain = 0u;
-        inputSignals = NULL_PTR(MARTe::float32 **);
-        outputSignals = NULL_PTR(MARTe::float32 **);
-        outputSignal1 = NULL;
+        //inputSignals = NULL_PTR(MARTe::float32 **);
+        //outputSignals = NULL_PTR(MARTe::float32 **);
+//        outputSignal1 = NULL;
+
+        inputElectricTop    = NULL_PTR(MARTe::float32 *);
+        inputElectricInner  = NULL_PTR(MARTe::float32 *);
+        inputElectricOuter  = NULL_PTR(MARTe::float32 *);
+        inputElectricBottom = NULL_PTR(MARTe::float32 *);
+
+        outputEpR = NULL_PTR(MARTe::float32 *);
+        outputEpZ = NULL_PTR(MARTe::float32 *);
     }
 
     ElectricProbesGAM::~ElectricProbesGAM() {
-        if (inputSignals != NULL_PTR(MARTe::float32 **)) {
-            delete[] inputSignals;
-        }
-        if (outputSignals != NULL_PTR(MARTe::float32 **)) {
+        //if (inputSignals != NULL_PTR(MARTe::float32 **)) {
+        //    delete[] inputSignals;
+        //}
+        /*if (outputSignals != NULL_PTR(MARTe::float32 **)) {
             delete[] outputSignals;
         }
-        outputSignal1 = NULL;
+        */
     }
 
     bool ElectricProbesGAM::Initialise(MARTe::StructuredDataI & data) {
@@ -79,20 +87,9 @@ namespace MARTeIsttok {
     bool ElectricProbesGAM::Setup() {
         using namespace MARTe;
         uint32 numberOfInputSignals = GetNumberOfInputSignals();
-        uint32 numberOfOutputSignals = GetNumberOfOutputSignals();
         bool ok = (numberOfInputSignals == 4u);
         if (!ok) {
             REPORT_ERROR(ErrorManagement::ParametersError, "The number of input signals shall be equal to 4. numberOfInputSignals = %d ", numberOfInputSignals);
-        }
-        if (ok) {
-            inputSignals = new float32*[numberOfInputSignals];
-        }
-        if (ok) {
-            ok = (numberOfOutputSignals == 1u);
-            if (!ok) {
-                REPORT_ERROR(ErrorManagement::ParametersError,
-                        "The number of output signals shall be equal to 1. numberOfOutputSignals = %d", numberOfOutputSignals);
-            }
         }
 
         if (ok) {
@@ -144,19 +141,27 @@ namespace MARTeIsttok {
                             "The number of input signal elements shall be equal to 1. numberOfInputElements(%s) = %d", inputSignalName.Buffer(), numberOfInputElements);
                 }
 
-                if (ok) {
-                     inputSignals[n] = reinterpret_cast<float32 *>(GetInputSignalMemory(n));
-                }
+//                if (ok) {
+//                     inputSignals[n] = reinterpret_cast<float32 *>(GetInputSignalMemory(n));
+//                }
 
 
             }
+            if (ok) {
+                inputElectricTop    = reinterpret_cast<float32 *>(GetInputSignalMemory(0u));
+                inputElectricInner  = reinterpret_cast<float32 *>(GetInputSignalMemory(1u));
+                inputElectricOuter  = reinterpret_cast<float32 *>(GetInputSignalMemory(2u));
+                inputElectricBottom = reinterpret_cast<float32 *>(GetInputSignalMemory(3u));
+
+                REPORT_ERROR(ErrorManagement::Information, "InputSignals reinterpret_cast OK");
+            }
         }
+
+        // OutputSignals
+        uint32 numberOfOutputSignals = GetNumberOfOutputSignals();
         ok = (numberOfOutputSignals == 2u);
         if (!ok) {
             REPORT_ERROR(ErrorManagement::ParametersError, "The number of output signals shall be equal to 2. numberOfOutputSignals = %d ", numberOfOutputSignals);
-        }
-        if (ok) {
-            outputSignals = new float32*[numberOfOutputSignals];
         }
         if (ok) {
             uint32 n;
@@ -190,8 +195,7 @@ namespace MARTeIsttok {
                 if (ok) {
                     ok = (numberOfOutputDimensions == 0u);
                     if (!ok) {
-                        REPORT_ERROR(
-                                ErrorManagement::ParametersError,
+                        REPORT_ERROR(ErrorManagement::ParametersError,
                                 "The number of output signals dimensions shall be equal to 0.  numberOfOutputDimensions (%s) = %d", outputSignalName.Buffer(), numberOfOutputDimensions);
                     }
                 }
@@ -207,12 +211,10 @@ namespace MARTeIsttok {
                                  "The number of output signals elements shall be equal to 1. (%s) numberOfOutputElements = %d", outputSignalName.Buffer(), numberOfOutputElements);
                 }
 
-
-
             }
             if (ok) {
-                outputSignals[0] = reinterpret_cast<float32 *>(GetOutputSignalMemory(0));
-                outputSignal1 = reinterpret_cast<float32 *>(GetOutputSignalMemory(1));
+                outputEpR = reinterpret_cast<float32 *>(GetOutputSignalMemory(0u));
+                outputEpZ = reinterpret_cast<float32 *>(GetOutputSignalMemory(1u));
             }
         }
         return ok;
@@ -221,6 +223,10 @@ namespace MARTeIsttok {
 
     bool ElectricProbesGAM::Execute() {
         //*outputSignal = *inputSignal;
+        *outputEpR = 4.3;
+//        *outputEpZ = 3.4;
+        *outputEpZ = *inputElectricTop;
+        //*outputSignal1 = *inputSignals[0]; // - *inputSignals[1];
         //*outputSignal1 = *inputSignals[0] - *inputSignals[1];
          return true;
     }

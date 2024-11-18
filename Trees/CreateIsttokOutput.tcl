@@ -25,6 +25,12 @@ add node TIMED/usage=signal
 set def \ISTTOKOUTPUT::TOP.OUT
 add node OUT0/usage=signal
 add node OUT1/usage=signal
+add node OUT2/usage=signal
+add node OUT3/usage=signal
+add node OUT4/usage=signal
+add node OUT5/usage=signal
+add node OUT6/usage=signal
+add node OUT7/usage=signal
 add node CYCLE_TIME/usage=signal
 add node IPLASMA/usage=signal
 add node IP_X/usage=signal
@@ -74,6 +80,6 @@ add node CYCLETD/usage=signal
 
 write
 close
-# set tree isttokoutput
-# create pulse 1
+set tree isttokoutput
+create pulse 1
 exit
