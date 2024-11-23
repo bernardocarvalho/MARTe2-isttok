@@ -38,101 +38,150 @@
 /*---------------------------------------------------------------------------*/
 /*                           Class declaration                               */
 /*---------------------------------------------------------------------------*/
-namespace MARTeIsttok {
-/**
- * @brief An example of a GAM which has fixed inputs and outputs.
- *
- * @details This GAM multiplies the input signal by a Gain.
- * The configuration syntax is (names and types are only given as an example):
- *
- * +GAMElectricProbes = {
- *     Class = ElectricProbesGAM
- *     Gain = 5 //Compulsory
- *     InputSignals = {
- *         Signal1 = {
- *             DataSource = "DDB1"
- *             Type = uint32
- *         }
- *     }
- *     OutputSignals = {
- *         Signal1 = {
- *             DataSource = "DDB1"
- *             Type = uint32
- *         }
- *     }
- * }
- */
-class ElectricProbesGAM : public MARTe::GAM, public MARTe::MessageI {
-public:
-    CLASS_REGISTER_DECLARATION()
+//namespace MARTeIsttok {
+namespace MARTe {
     /**
-     * @brief Constructor. NOOP.
+     * @brief An example of a GAM which has fixed inputs and outputs.
+     *
+     * @details This GAM multiplies the input signal by a Gain.
+     * The configuration syntax is (names and types are only given as an example):
+     *
+     * +GAMElectricProbes = {
+     *     Class = ElectricProbesGAM
+     *     Gain = 5 //Compulsory
+     *     NumberOfSamplesAvg  = 4 //Compulsory
+     *     ResetInEachState = 0//Compulsory. 1--> reset in each state, 0--> reset if the previous state is different from the next state
+
+     *     InputSignals = {
+     *         Signal1 = {
+     *             DataSource = "DDB1"
+     *             Type = uint32
+     *         }
+     *     }
+     *     OutputSignals = {
+     *         Signal1 = {
+     *             DataSource = "DDB1"
+     *             Type = uint32
+     *         }
+     *     }
+     * }
      */
-    ElectricProbesGAM();
+    class ElectricProbesGAM : public MARTe::GAM, public MARTe::MessageI {
+        public:
+            CLASS_REGISTER_DECLARATION()
+                /**
+                 * @brief Constructor. NOOP.
+                 */
+                ElectricProbesGAM();
 
-    /**
-     * @brief Destructor. NOOP.
-     */
-    virtual ~ElectricProbesGAM();
+            /**
+             * @brief Destructor. NOOP.
+             */
+            virtual ~ElectricProbesGAM();
 
-    /**
-     * @brief Reads the Gain from the configuration file.
-     * @param[in] data see GAM::Initialise. The parameter Gain shall exist and will be read as an uint32.
-     * @return true if the parameter Gain can be read.
-     */
-    virtual bool Initialise(MARTe::StructuredDataI & data);
+            /**
+             * @brief Reads the Gain from the configuration file.
+             * @param[in] data see GAM::Initialise. The parameter Gain shall exist and will be read as an uint32.
+             * @return true if the parameter Gain can be read.
+             */
+            virtual bool Initialise(MARTe::StructuredDataI & data);
 
-    /**
-     * @brief Verifies correctness of the GAM configuration.
-     * @details Checks that the number of input signals is equal to the number of output signals is equal to one and that the same type is used.
-     * @return true if the pre-conditions are met.
-     * @pre
-     *   SetConfiguredDatabase() &&
-     *   GetNumberOfInputSignals() == GetNumberOfOutputSignals() == 1 &&
-     *   GetSignalType(InputSignals, 0) == GetSignalType(OutputSignals, 0) == uint32 &&
-     *   GetSignalNumberOfDimensions(InputSignals, 0) == GetSignalNumberOfDimensions(OutputSignals, 0) == 0 &&
-     *   GetSignalNumberOfSamples(InputSignals, 0) == GetSignalNumberOfSamples(OutputSignals, 0) == 1 &&
-     *   GetSignalNumberOfElements(InputSignals, 0) == GetSignalNumberOfElements(OutputSignals, 0) == 1
-     */
-    virtual bool Setup();
+            /**
+             * @brief Verifies correctness of the GAM configuration.
+             * @details Checks that the number of input signals is equal to the number of output signals is equal to one and that the same type is used.
+             * @return true if the pre-conditions are met.
+             * @pre
+             *   SetConfiguredDatabase() &&
+             *   GetNumberOfInputSignals() == 4 
+             *   GetNumberOfInputSignals() == 
+             *   GetSignalType(InputSignals, 0) == GetSignalType(OutputSignals, 0) == uint32 &&
+             */
+            virtual bool Setup();
 
-    /**
-     * @brief Multiplies the input signal by the Gain.
-     * @return true.
-     */
-    virtual bool Execute();
-
-    /**
-     * @brief Export information about the component
-     */
-    virtual bool ExportData(MARTe::StructuredDataI & data);
-
-private:
-
-    /**
-     * The input signals
-     */
-//    MARTe::float32 **inputSignals;
-
-    MARTe::float32 *inputElectricTop;
-    MARTe::float32 *inputElectricInner;
-    MARTe::float32 *inputElectricOuter;
-    MARTe::float32 *inputElectricBottom;
-
-    /**
-     * The output signals
-     */
-   // MARTe::float32 **outputSignals;
-    //MARTe::float32 *outputSignal1;
-    MARTe::float32 *outputEpR;
-    MARTe::float32 *outputEpZ;
+            /**
+             * @brief Multiplies the input signal by the Gain.
+             * @return true.
+             */
+            virtual bool Execute();
+            
+            /**
+             * @brief Reset the states if required.
+             * @details This functions has two operations modes:
+             * <ul>
+             * <li> Reset the GAM states every time the state changes.
+             * </li>
+             * <li> Reset the GAM if it was not executed in the previous state. e.i. if the GAM goes from
+             * "A" to "B" and then from "B" to "C" it will not be reset. In the other hand if the GAM goes
+             * from "A" to "B" and then from "C" to "D" the GAM will be reset the states.
+             * </li>
+             * </ul>
+             * @param[in] currentStateName indicates the current state.
+             * @param[in] nextStateName indicates the next state.
+             * @return true if the state vectors are not NULL.
+             */
+             virtual bool PrepareNextState(const char8 * const currentStateName,
+                    const char8 * const nextStateName);
 
 
-    /**
-     * The configured gain.
-     */
-    MARTe::uint32 gain;
-};
+            /**
+             * @brief CalcOffSets method.
+             * @details The method is registered as a messageable function.
+             * @return ErrorManagement::NoError if the pre-conditions are met, ErrorManagement::ParametersError
+             * otherwise.
+               */
+
+            MARTe::ErrorManagement::ErrorType CalcOffSets();
+
+            /**
+             * @brief Export information about the component
+             */
+            virtual bool ExportData(MARTe::StructuredDataI & data);
+
+        private:
+
+            /**
+             * The configured gain.
+             */
+            MARTe::uint32 gain;
+
+            /**
+             * The configured numberOfSamplesAvg.
+             */
+            uint32 numberOfSamplesAvg;
+
+            /**
+             * The input signals
+             */
+
+            MARTe::float32 *inputElectricTop;
+            MARTe::float32 *inputElectricInner;
+            MARTe::float32 *inputElectricOuter;
+            MARTe::float32 *inputElectricBottom;
+
+            MARTe::float32 inputOffsets[4];
+
+            MARTe::float32 **lastInputs;
+
+            /**
+             * The output signals
+             */
+            // MARTe::float32 **outputSignals;
+            //MARTe::float32 *outputSignal1;
+            float32 *outputEpR;
+            float32 *outputEpZ;
+
+            /**
+             * Indicates the behaviour of the reset when MARTe changes the state
+             */
+            bool resetInEachState;
+
+            /**
+             * Remember the last executed state.
+             */
+            StreamString lastStateExecuted;
+
+
+    };
 }
 /*---------------------------------------------------------------------------*/
 /*                        Inline method definitions                          */
@@ -140,3 +189,4 @@ private:
 
 #endif /* ELECTRICPROBESGAM_H_ */
 
+//  vim: syntax=cpp ts=4 sw=4 sts=4 sr et

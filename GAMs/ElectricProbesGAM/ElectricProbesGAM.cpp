@@ -29,31 +29,46 @@
 /*                         Project header includes                           */
 /*---------------------------------------------------------------------------*/
 #include "AdvancedErrorManagement.h"
+#include "CLASSMETHODREGISTER.h"
+
 #include "ElectricProbesGAM.h"
+#include "RegisteredMethodsMessageFilter.h"
 
 /*---------------------------------------------------------------------------*/
 /*                           Static definitions                              */
 /*---------------------------------------------------------------------------*/
 
+//namespace MARTeIsttok {
+namespace MARTe {
+/**
+ * The number of signals
+ */
+    const  uint32 EP_NUM_INPUTS  = 4u; 
+    const  uint32 EP_NUM_OUTPUTS = 2u; 
+
 /*---------------------------------------------------------------------------*/
 /*                           Method definitions                              */
 /*---------------------------------------------------------------------------*/
-namespace MARTeIsttok {
+//namespace MARTeIsttok {
     ElectricProbesGAM::ElectricProbesGAM() : 
                 GAM(),
                 MessageI() {
         gain = 0u;
-        //inputSignals = NULL_PTR(MARTe::float32 **);
+        numberOfSamplesAvg = 1u;
+
         //outputSignals = NULL_PTR(MARTe::float32 **);
-//        outputSignal1 = NULL;
 
         inputElectricTop    = NULL_PTR(MARTe::float32 *);
         inputElectricInner  = NULL_PTR(MARTe::float32 *);
         inputElectricOuter  = NULL_PTR(MARTe::float32 *);
         inputElectricBottom = NULL_PTR(MARTe::float32 *);
 
+        lastInputs = NULL_PTR(MARTe::float32**);
+
+
         outputEpR = NULL_PTR(MARTe::float32 *);
         outputEpZ = NULL_PTR(MARTe::float32 *);
+        resetInEachState = false;
     }
 
     ElectricProbesGAM::~ElectricProbesGAM() {
@@ -64,6 +79,22 @@ namespace MARTeIsttok {
             delete[] outputSignals;
         }
         */
+        if (lastInputs != NULL_PTR(MARTe::float32**)) {
+            MARTe::uint32 k;
+            for (k=0u; k < EP_NUM_INPUTS; k++) {
+                if (lastInputs[k] != NULL_PTR(MARTe::float32*)) {
+                    delete[] lastInputs[k];
+                }
+            }
+            delete[] lastInputs;
+        }
+/*
+        for (k=0u; k < EP_NUM_INPUTS; k++) {
+            if(lastInputs[k] != NULL_PTR(MARTe::float32 *)) {
+                delete [] lastInputs[k];
+            }
+        } 
+*/
     }
 
     bool ElectricProbesGAM::Initialise(MARTe::StructuredDataI & data) {
@@ -81,6 +112,37 @@ namespace MARTeIsttok {
         if (ok) {
             REPORT_ERROR(ErrorManagement::Information, "Parameter Gain set to %d", gain);
         }
+        if (ok) {
+            ok = data.Read("NumberOfSamplesAvg", numberOfSamplesAvg);
+            if (!ok) {
+                REPORT_ERROR(ErrorManagement::ParametersError, 
+                        "The parameter NumberOfSamplesAvg shall be set");
+            }
+        }
+        if (ok) {
+            REPORT_ERROR(ErrorManagement::Information, "Parameter NumberOfSamplesAvg set to %d",
+                    numberOfSamplesAvg);
+        }
+        if (ok) {
+            uint32 auxResetInEachState = 0u;
+            ok = data.Read("ResetInEachState", auxResetInEachState);
+            if (!ok) {
+                REPORT_ERROR(ErrorManagement::InitialisationError, "Error reading ResetInEachState");
+            }
+            else {
+                if (auxResetInEachState == 1u) {
+                    resetInEachState = true;
+                }
+                else if (auxResetInEachState == 0u) {
+                    resetInEachState = false;
+                }
+                else {
+                    ok = false;
+                    REPORT_ERROR(ErrorManagement::InitialisationError, "Wrong value for ResetInEachState. Possible values 0 (false) or 1 (true)");
+                }
+            }
+        }
+
         return ok;
     }
 
@@ -93,7 +155,22 @@ namespace MARTeIsttok {
         }
 
         if (ok) {
+            lastInputs = new float32*[numberOfInputSignals];
             uint32 n;
+            if (lastInputs != NULL_PTR(MARTe::float32**)) {
+                for (n = 0u; n < numberOfInputSignals ; n++) {
+                    if (numberOfSamplesAvg > 1u) {
+                        lastInputs[n] = new float32[numberOfSamplesAvg - 1u];
+                        if (lastInputs[n] != NULL_PTR(MARTe::float32*)) {
+                            uint32 i;
+                            for (i = 0u; i < (numberOfSamplesAvg - 1u); i++) {
+                                lastInputs[n][i] = 0.0F;
+                            }
+                        }
+                    }
+                }
+            }
+
             for (n = 0u; (n < numberOfInputSignals) && (ok); n++) {
                 StreamString inputSignalName;
                 ok = GetSignalName(InputSignals, n, inputSignalName);
@@ -155,6 +232,7 @@ namespace MARTeIsttok {
 
                 REPORT_ERROR(ErrorManagement::Information, "InputSignals reinterpret_cast OK");
             }
+
         }
 
         // OutputSignals
@@ -217,6 +295,19 @@ namespace MARTeIsttok {
                 outputEpZ = reinterpret_cast<float32 *>(GetOutputSignalMemory(1u));
             }
         }
+
+        // Install message filter
+        ReferenceT<RegisteredMethodsMessageFilter> registeredMethodsMessageFilter("RegisteredMethodsMessageFilter");
+
+        if (ok) {
+            ok = registeredMethodsMessageFilter.IsValid();
+        }
+
+        if (ok) {
+            registeredMethodsMessageFilter->SetDestination(this);
+            ok = InstallMessageFilter(registeredMethodsMessageFilter);
+        }
+
         return ok;
 
     }
@@ -225,10 +316,73 @@ namespace MARTeIsttok {
         //*outputSignal = *inputSignal;
         *outputEpR = 4.3;
 //        *outputEpZ = 3.4;
-        *outputEpZ = *inputElectricTop;
+        *outputEpZ = *inputElectricTop - *inputElectricOuter;
         //*outputSignal1 = *inputSignals[0]; // - *inputSignals[1];
         //*outputSignal1 = *inputSignals[0] - *inputSignals[1];
+
+        //update the last values
+        for (MARTe::uint32 i = 0u; i < EP_NUM_INPUTS; i++) {
+
+            if (numberOfSamplesAvg > 2u) {
+                /*lint -e{9117} implicit conversion is safe*/
+                for (MARTe::uint32 k = (numberOfSamplesAvg - 1u); k > 0u; k--) {
+                    lastInputs[i][k] = lastInputs[i][k - 1];
+                }
+            }
+        }
+        if (numberOfSamplesAvg > 1u) {
+            lastInputs[0][0] = *inputElectricTop;
+            lastInputs[1][0] = *inputElectricInner;
+            lastInputs[2][0] = *inputElectricOuter;
+            lastInputs[3][0] = *inputElectricBottom;
+                                                  //lastInputs[i][0] = input[i][numberOfSamples - 1u];
+        }
+
          return true;
+    }
+
+    bool ElectricProbesGAM::PrepareNextState(const char8 * const currentStateName,
+            const char8 * const nextStateName) {
+        bool ret = true;
+
+        if (resetInEachState) {
+            lastStateExecuted = nextStateName;
+        }
+/*
+            bool cond1 = (stateVector.GetDataPointer() != NULL_PTR(float64 **));
+            bool cond2 = (derivativeStateVector.GetDataPointer() != NULL_PTR(float64 **));
+            if (cond1 && cond2) {
+                for (uint32 i = 0u; i < sizeStateVector; i++) {
+                    stateVector(i, 0u) = 0.0;
+                    derivativeStateVector(i, 0u) = 0.0;
+                }
+            }
+            else {
+                REPORT_ERROR(ErrorManagement::ParametersError, "stateVector or derivativeStateVector = NULL ");
+                ret = false;
+            }
+
+        }
+        else {
+            //If the currentStateName and lastStateExecuted are different-> rest values
+            if (lastStateExecuted != currentStateName) {
+                bool cond1 = (stateVector.GetDataPointer() != NULL_PTR(float64 **));
+                bool cond2 = (derivativeStateVector.GetDataPointer() != NULL_PTR(float64 **));
+                if (cond1 && cond2) {
+                    for (uint32 i = 0u; i < sizeStateVector; i++) {
+                        stateVector(i, 0u) = 0.0;
+                        derivativeStateVector(i, 0u) = 0.0;
+                    }
+                }
+                else {
+                    REPORT_ERROR(ErrorManagement::ParametersError, "stateVector or derivativeStateVector = NULL ");
+                    ret = false;
+                }
+            }
+            lastStateExecuted = nextStateName;
+        }
+*/
+        return ret;
     }
 
 
@@ -247,9 +401,32 @@ namespace MARTeIsttok {
         return ok;
     }
 
-    CLASS_REGISTER(ElectricProbesGAM, "1.0")
-    //CLASS_METHOD_REGISTER(AtcaIopConfig, WriteEoWo)
+    ErrorManagement::ErrorType ElectricProbesGAM::CalcOffSets() {
 
-}
+        ErrorManagement::ErrorType ret = MARTe::ErrorManagement::NoError;
+        REPORT_ERROR(ErrorManagement::Information, 
+                        "CalcOffSets. numberOfSamplesAvg: %d!", numberOfSamplesAvg);
+        if (numberOfSamplesAvg > 1u) {
+            for (uint32 i = 0u; i < EP_NUM_INPUTS; i++) {
+                inputOffsets[i] = 0.0f;
+                for (uint32 k =  0 ; k < numberOfSamplesAvg; k++) {
+                    inputOffsets[i] += lastInputs[i][k];
+                }
+                inputOffsets[i] /= numberOfSamplesAvg;
+                REPORT_ERROR(ErrorManagement::Information, 
+                        "CalcOffSets. Offset:%d= %f!", i, inputOffsets[i]);
+            }
+        }
+
+        return ret;
+    }
+
+
+    CLASS_REGISTER(ElectricProbesGAM, "1.0")
+
+//    CLASS_METHOD_REGISTER(ElectricProbesGAM, ElectricProbesGAM::CalcOffSets)
+    CLASS_METHOD_REGISTER(ElectricProbesGAM, CalcOffSets)
+
+} /* namespace MARTeIsttok */
 
 //  vim: syntax=cpp ts=4 sw=4 sts=4 sr et
