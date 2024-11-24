@@ -153,12 +153,20 @@ namespace MARTe {
              * The input signals
              */
 
+            /**
+             * The input signal
+            */
+            float32 *inputSignal;
+
+            /*
             MARTe::float32 *inputElectricTop;
             MARTe::float32 *inputElectricInner;
             MARTe::float32 *inputElectricOuter;
             MARTe::float32 *inputElectricBottom;
+            */
+            uint32 numberOfInputElements;
 
-            MARTe::float32 inputOffsets[4];
+            float32 inputOffsets[4];
 
             MARTe::float32 **lastInputs;
 

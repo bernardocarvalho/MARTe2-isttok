@@ -43,8 +43,8 @@ namespace MARTe {
 /**
  * The number of signals
  */
-    const  uint32 EP_NUM_INPUTS  = 4u; 
-    const  uint32 EP_NUM_OUTPUTS = 2u; 
+    const  uint32 EP_NUM_INPUTS  = 4u;
+    const  uint32 EP_NUM_OUTPUTS = 2u;
 
 /*---------------------------------------------------------------------------*/
 /*                           Method definitions                              */
@@ -55,16 +55,17 @@ namespace MARTe {
                 MessageI() {
         gain = 0u;
         numberOfSamplesAvg = 1u;
+        numberOfInputElements = 0u;
 
         //outputSignals = NULL_PTR(MARTe::float32 **);
-
+/*
         inputElectricTop    = NULL_PTR(MARTe::float32 *);
         inputElectricInner  = NULL_PTR(MARTe::float32 *);
         inputElectricOuter  = NULL_PTR(MARTe::float32 *);
         inputElectricBottom = NULL_PTR(MARTe::float32 *);
-
+*/
         lastInputs = NULL_PTR(MARTe::float32**);
-
+        inputSignal = NULL; // NULL_PTR(MARTe::float32*);
 
         outputEpR = NULL_PTR(MARTe::float32 *);
         outputEpZ = NULL_PTR(MARTe::float32 *);
@@ -72,9 +73,10 @@ namespace MARTe {
     }
 
     ElectricProbesGAM::~ElectricProbesGAM() {
-        //if (inputSignals != NULL_PTR(MARTe::float32 **)) {
-        //    delete[] inputSignals;
+        //if (inputSignal != NULL_PTR(MARTe::float32 **)) {
+       //     delete[] inputSignal;
         //}
+        inputSignal =  NULL; //NULL_PTR(MARTe::float32*);
         /*if (outputSignals != NULL_PTR(MARTe::float32 **)) {
             delete[] outputSignals;
         }
@@ -149,91 +151,85 @@ namespace MARTe {
     bool ElectricProbesGAM::Setup() {
         using namespace MARTe;
         uint32 numberOfInputSignals = GetNumberOfInputSignals();
-        bool ok = (numberOfInputSignals == 4u);
+        bool ok = (numberOfInputSignals == 1u);
         if (!ok) {
             REPORT_ERROR(ErrorManagement::ParametersError, "The number of input signals shall be equal to 4. numberOfInputSignals = %d ", numberOfInputSignals);
         }
-
         if (ok) {
-            lastInputs = new float32*[numberOfInputSignals];
+
+            StreamString inputSignalName;
+            ok = GetSignalName(InputSignals, 0u, inputSignalName);
+            TypeDescriptor inputSignalType = GetSignalType(InputSignals, 0u);
+            ok = (inputSignalType == Float32Bit);
+            if (!ok) {
+                const char8 * const inputSignalTypeStr = TypeDescriptor::GetTypeNameFromTypeDescriptor(inputSignalType);
+                REPORT_ERROR(ErrorManagement::ParametersError,
+                        "The type of the input signals shall be float32. inputSignalType = %s", inputSignalTypeStr);
+            }
+            uint32 numberOfInputSamples = 0u;
+            if (ok) {
+                ok = GetSignalNumberOfSamples(InputSignals, 0u, numberOfInputSamples);
+            }
+
+            if (ok) {
+                ok = (numberOfInputSamples == 1u);
+            }
+            if (!ok) {
+                REPORT_ERROR(ErrorManagement::ParametersError,
+                        "The number of input signals samples shall be equal to 1. numberOfInputSamples = %d", numberOfInputSamples);
+            }
+            uint32 numberOfInputDimensions = 0u;
+            if (ok) {
+                ok = GetSignalNumberOfDimensions(InputSignals, 0u, numberOfInputDimensions);
+            }
+
+            if (ok) {
+                ok = (numberOfInputDimensions == 0u);
+                if (!ok) {
+                    REPORT_ERROR(
+                            ErrorManagement::ParametersError,
+                            "The number of input signals dimensions shall be equal to 0. numberOfInputDimensions(%s) = %d", inputSignalName.Buffer(), numberOfInputDimensions);
+                }
+            }
+            if (ok) {
+                ok = GetSignalNumberOfElements(InputSignals, 0u, numberOfInputElements);
+            }
+            if (ok) {
+                ok = (numberOfInputElements == 4u);
+            }
+            if (!ok) {
+                REPORT_ERROR(ErrorManagement::ParametersError,
+                        "The number of input signal elements shall be equal to 4. numberOfInputElements(%s) = %d", inputSignalName.Buffer(), numberOfInputElements);
+            }
+
+
+        }
+        if (ok) {
+            lastInputs = new float32*[numberOfInputElements];
             uint32 n;
-            if (lastInputs != NULL_PTR(MARTe::float32**)) {
-                for (n = 0u; n < numberOfInputSignals ; n++) {
-                    if (numberOfSamplesAvg > 1u) {
-                        lastInputs[n] = new float32[numberOfSamplesAvg - 1u];
-                        if (lastInputs[n] != NULL_PTR(MARTe::float32*)) {
-                            uint32 i;
-                            for (i = 0u; i < (numberOfSamplesAvg - 1u); i++) {
-                                lastInputs[n][i] = 0.0F;
-                            }
+            for (n = 0u; n < numberOfInputElements ; n++) {
+                if (numberOfSamplesAvg > 1u) {
+                    lastInputs[n] = new float32[numberOfSamplesAvg - 1u];
+                    if (lastInputs[n] != NULL_PTR(MARTe::float32*)) {
+                        uint32 i;
+                        for (i = 0u; i < (numberOfSamplesAvg - 1u); i++) {
+                            lastInputs[n][i] = 0.0F;
                         }
                     }
                 }
             }
-
-            for (n = 0u; (n < numberOfInputSignals) && (ok); n++) {
-                StreamString inputSignalName;
-                ok = GetSignalName(InputSignals, n, inputSignalName);
-                TypeDescriptor inputSignalType = GetSignalType(InputSignals, n);
-                ok = (inputSignalType == Float32Bit);
-                if (!ok) {
-                    const char8 * const inputSignalTypeStr = TypeDescriptor::GetTypeNameFromTypeDescriptor(inputSignalType);
-                    REPORT_ERROR(ErrorManagement::ParametersError,
-                            "The type of the input signals shall be float32. inputSignalType = %s", inputSignalTypeStr);
-                }
-                uint32 numberOfInputSamples = 0u;
-                if (ok) {
-                    ok = GetSignalNumberOfSamples(InputSignals, n, numberOfInputSamples);
-                }
-
-                if (ok) {
-                    ok = (numberOfInputSamples == 1u);
-                }
-                if (!ok) {
-                    REPORT_ERROR(ErrorManagement::ParametersError,
-                            "The number of input signals samples shall be equal to 1. numberOfInputSamples = %d", numberOfInputSamples);
-                }
-                uint32 numberOfInputDimensions = 0u;
-                if (ok) {
-                    ok = GetSignalNumberOfDimensions(InputSignals, n, numberOfInputDimensions);
-                }
-
-                if (ok) {
-                    ok = (numberOfInputDimensions == 0u);
-                    if (!ok) {
-                        REPORT_ERROR(
-                                ErrorManagement::ParametersError,
-                                "The number of input signals dimensions shall be equal to 0. numberOfInputDimensions(%s) = %d", inputSignalName.Buffer(), numberOfInputDimensions);
-                    }
-                }
-                uint32 numberOfInputElements = 0u;
-                if (ok) {
-                    ok = GetSignalNumberOfElements(InputSignals, n, numberOfInputElements);
-                }
-                if (ok) {
-                    ok = (numberOfInputElements == 1u);
-                }
-                if (!ok) {
-                    REPORT_ERROR(ErrorManagement::ParametersError,
-                            "The number of input signal elements shall be equal to 1. numberOfInputElements(%s) = %d", inputSignalName.Buffer(), numberOfInputElements);
-                }
-
-//                if (ok) {
-//                     inputSignals[n] = reinterpret_cast<float32 *>(GetInputSignalMemory(n));
-//                }
-
-
-            }
-            if (ok) {
-                inputElectricTop    = reinterpret_cast<float32 *>(GetInputSignalMemory(0u));
-                inputElectricInner  = reinterpret_cast<float32 *>(GetInputSignalMemory(1u));
-                inputElectricOuter  = reinterpret_cast<float32 *>(GetInputSignalMemory(2u));
-                inputElectricBottom = reinterpret_cast<float32 *>(GetInputSignalMemory(3u));
-
-                REPORT_ERROR(ErrorManagement::Information, "InputSignals reinterpret_cast OK");
-            }
-
         }
+        if (ok) {
+            inputSignal   = reinterpret_cast<float32 *>(GetInputSignalMemory(0u));
+/*
+            inputElectricTop    = reinterpret_cast<float32 *>(GetInputSignalMemory(0u));
+            inputElectricInner  = reinterpret_cast<float32 *>(GetInputSignalMemory(1u));
+            inputElectricOuter  = reinterpret_cast<float32 *>(GetInputSignalMemory(2u));
+            inputElectricBottom = reinterpret_cast<float32 *>(GetInputSignalMemory(3u));
+*/
+            REPORT_ERROR(ErrorManagement::Information, "InputSignals reinterpret_cast OK");
+        }
+
 
         // OutputSignals
         uint32 numberOfOutputSignals = GetNumberOfOutputSignals();
@@ -313,15 +309,15 @@ namespace MARTe {
     }
 
     bool ElectricProbesGAM::Execute() {
-        //*outputSignal = *inputSignal;
-        *outputEpR = 4.3;
-//        *outputEpZ = 3.4;
-        *outputEpZ = *inputElectricTop - *inputElectricOuter;
-        //*outputSignal1 = *inputSignals[0]; // - *inputSignals[1];
+        //*outputEpZ = 3.4;
+        *outputEpR =  (inputSignal[2] - inputOffsets[2]) - 
+            (inputSignal[1] - inputOffsets[1]);
+        *outputEpZ =  inputSignal[0] - inputSignal[3];
+        //;*inputElectricTop - *inputElectricOuter;
         //*outputSignal1 = *inputSignals[0] - *inputSignals[1];
 
         //update the last values
-        for (MARTe::uint32 i = 0u; i < EP_NUM_INPUTS; i++) {
+        for (MARTe::uint32 i = 0u; i < numberOfInputElements; i++) {
 
             if (numberOfSamplesAvg > 2u) {
                 /*lint -e{9117} implicit conversion is safe*/
@@ -329,7 +325,11 @@ namespace MARTe {
                     lastInputs[i][k] = lastInputs[i][k - 1];
                 }
             }
+            if (numberOfSamplesAvg > 1u) {
+                lastInputs[i][0] = inputSignal[i];
+            }
         }
+        /*
         if (numberOfSamplesAvg > 1u) {
             lastInputs[0][0] = *inputElectricTop;
             lastInputs[1][0] = *inputElectricInner;
@@ -337,7 +337,7 @@ namespace MARTe {
             lastInputs[3][0] = *inputElectricBottom;
                                                   //lastInputs[i][0] = input[i][numberOfSamples - 1u];
         }
-
+*/
          return true;
     }
 
