@@ -32,6 +32,7 @@ def build_import_table_langmuir():
         table.append(nd)
     return table
 
+
 """
 def plot_signals(pulse, nodeTable):
     try:
@@ -64,7 +65,8 @@ def plot_signals(pulse, nodeTable):
 
 
 def get_arguments():
-    parser = argparse.ArgumentParser(description='ISTTOK ')
+    parser = argparse.ArgumentParser(
+            description='Import SDAS ISTTOK to csv File ')
     parser.add_argument('-p', '--pulse',
                         help='pulse (shot) number', default='46241', type=int)
     # parser.add_argument('-s', '--shot',
@@ -82,6 +84,8 @@ def get_arguments():
                         action='store_true', help='Plot Signals')
     parser.add_argument('-n', '--names',
                         action='store_true', help='Print Node Table')
+    parser.add_argument('-z', '--zeros', type=int,
+                        help='Insert zeros rows', default='0')
     return parser.parse_args()
 
 
@@ -99,14 +103,20 @@ if (__name__ == "__main__"):
     time = np.arange(len(data), dtype='uint32') * int(period)
     langmuirNp = np.array(langmuirData).T
     data2file = np.insert(langmuirNp, 0, time,  axis=1)
-    filename = f"{args.file:s}_{pulseNo}.csv"
-    head = ('#Time (uint32)[1],Langmuir0 (float32)[1],Langmuir1 (float32)[1],'
-            'Langmuir2 (float32)[1],Langmuir3 (float32)[1]')
-    # formt = ['%d', '%.6f', '%.6f', '%.6f', '%.6f']
-    formt = '%d,%.6f,%.6f,%.6f,%.6f'
-#    formt = '%d,{%.6f,%.6f,%.6f,%.6f}'
-#    head = '#TimeSdas (uint32)[1],LangmuirSignals (float32)[4]'
+    if args.zeros > 0:
+        nCol = data2file.shape[1]
+        zerRows = np.zeros([args.zeros, nCol])
+        data2file = np.insert(data2file, 0, zerRows, axis=0)
+    fname = f"{args.file:s}_{pulseNo}"
+    filename = f"{fname}.csv"
+#    head = ('#Time (uint32)[1],Langmuir0 (float32)[1],Langmuir1 (float32)[1],'
+#            'Langmuir2 (float32)[1],Langmuir3 (float32)[1]')
+#    formt = '%d,%.6f,%.6f,%.6f,%.6f'
+    formt = '%d,{%.6f,%.6f,%.6f,%.6f}'
+    head = '#TimeSdas (uint32)[1],LangmuirSignals (float32)[4]'
     np.savetxt(filename, data2file, fmt=formt,
-               header=head, comments='')  # , delimiter=',')
-
+               header=head, comments='')
+    # , delimiter=',')
+    np.save(fname, data2file)
 #    plot_signals(46241, table)
+# formt = ['%d', '%.6f', '%.6f', '%.6f', '%.6f']

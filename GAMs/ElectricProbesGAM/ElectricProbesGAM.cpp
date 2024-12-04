@@ -310,10 +310,10 @@ namespace MARTe {
 
     bool ElectricProbesGAM::Execute() {
         //*outputEpZ = 3.4;
-        *outputEpR =  (inputSignal[2] - inputOffsets[2]) - 
-            (inputSignal[1] - inputOffsets[1]);
-        *outputEpZ =  inputSignal[0] - inputSignal[3];
-        //;*inputElectricTop - *inputElectricOuter;
+        *outputEpR =  inputSignal[0];
+        *outputEpZ =  inputSignal[0] - inputOffsets[0];
+        //*outputEpR =  (inputSignal[2] - inputOffsets[2]) - 
+        //*outputEpZ =  inputSignal[0] - inputSignal[3];
         //*outputSignal1 = *inputSignals[0] - *inputSignals[1];
 
         //update the last values
@@ -404,8 +404,14 @@ namespace MARTe {
     ErrorManagement::ErrorType ElectricProbesGAM::CalcOffSets() {
 
         ErrorManagement::ErrorType ret = MARTe::ErrorManagement::NoError;
+//REPORT_ERROR(ErrorManagement::Information, 
+  //                      "CalcOffSets. numberOfSamplesAvg: %d!", numberOfSamplesAvg);
         REPORT_ERROR(ErrorManagement::Information, 
-                        "CalcOffSets. numberOfSamplesAvg: %d!", numberOfSamplesAvg);
+                        "CalcOffSets. Inputs:%f, %f, %f, %f.",
+                        inputSignal[0],
+                        inputSignal[1],
+                        inputSignal[2],
+                        inputSignal[3]);
         if (numberOfSamplesAvg > 1u) {
             for (uint32 i = 0u; i < EP_NUM_INPUTS; i++) {
                 inputOffsets[i] = 0.0f;
@@ -413,9 +419,13 @@ namespace MARTe {
                     inputOffsets[i] += lastInputs[i][k];
                 }
                 inputOffsets[i] /= numberOfSamplesAvg;
-                REPORT_ERROR(ErrorManagement::Information, 
-                        "CalcOffSets. Offset:%d= %f!", i, inputOffsets[i]);
             }
+            REPORT_ERROR(ErrorManagement::Information, 
+                        "CalcOffSets. Offset:%f, %f, %f, %f.",
+                        inputOffsets[0],
+                        inputOffsets[1],
+                        inputOffsets[2],
+                        inputOffsets[3]);
         }
 
         return ret;
