@@ -64,12 +64,15 @@ namespace MARTe {
         inputElectricOuter  = NULL_PTR(MARTe::float32 *);
         inputElectricBottom = NULL_PTR(MARTe::float32 *);
 */
-        lastInputs = NULL_PTR(MARTe::float32**);
+        triggerSdas = NULL_PTR(MARTe::uint32 *);
         inputSignal = NULL; // NULL_PTR(MARTe::float32*);
 
         outputEpR = NULL_PTR(MARTe::float32 *);
         outputEpZ = NULL_PTR(MARTe::float32 *);
         resetInEachState = false;
+
+        lastInputs = NULL_PTR(MARTe::float32**);
+        lastTriggerSdas = 0u;
     }
 
     ElectricProbesGAM::~ElectricProbesGAM() {
@@ -90,13 +93,6 @@ namespace MARTe {
             }
             delete[] lastInputs;
         }
-/*
-        for (k=0u; k < EP_NUM_INPUTS; k++) {
-            if(lastInputs[k] != NULL_PTR(MARTe::float32 *)) {
-                delete [] lastInputs[k];
-            }
-        } 
-*/
     }
 
     bool ElectricProbesGAM::Initialise(MARTe::StructuredDataI & data) {
@@ -151,20 +147,20 @@ namespace MARTe {
     bool ElectricProbesGAM::Setup() {
         using namespace MARTe;
         uint32 numberOfInputSignals = GetNumberOfInputSignals();
-        bool ok = (numberOfInputSignals == 1u);
+        bool ok = (numberOfInputSignals == 2u);
         if (!ok) {
-            REPORT_ERROR(ErrorManagement::ParametersError, "The number of input signals shall be equal to 4. numberOfInputSignals = %d ", numberOfInputSignals);
+            REPORT_ERROR(ErrorManagement::ParametersError, "The number of input signals shall be equal to 2. numberOfInputSignals = %d ", numberOfInputSignals);
         }
         if (ok) {
 
             StreamString inputSignalName;
             ok = GetSignalName(InputSignals, 0u, inputSignalName);
             TypeDescriptor inputSignalType = GetSignalType(InputSignals, 0u);
-            ok = (inputSignalType == Float32Bit);
+            ok = (inputSignalType == UnsignedInteger32Bit);
             if (!ok) {
                 const char8 * const inputSignalTypeStr = TypeDescriptor::GetTypeNameFromTypeDescriptor(inputSignalType);
                 REPORT_ERROR(ErrorManagement::ParametersError,
-                        "The type of the input signals shall be float32. inputSignalType = %s", inputSignalTypeStr);
+                        "The type of the input signals shall be uint32. inputSignalType = %s", inputSignalTypeStr);
             }
             uint32 numberOfInputSamples = 0u;
             if (ok) {
@@ -195,6 +191,49 @@ namespace MARTe {
                 ok = GetSignalNumberOfElements(InputSignals, 0u, numberOfInputElements);
             }
             if (ok) {
+                ok = (numberOfInputElements == 1u);
+            }
+            if (!ok) {
+                REPORT_ERROR(ErrorManagement::ParametersError,
+                        "The number of input signal elements shall be equal to 1. numberOfInputElements(%s) = %d", inputSignalName.Buffer(), numberOfInputElements);
+            }
+            ok = GetSignalName(InputSignals, 1u, inputSignalName);
+            inputSignalType = GetSignalType(InputSignals, 1u);
+            ok = (inputSignalType == Float32Bit);
+            if (!ok) {
+                const char8 * const inputSignalTypeStr = TypeDescriptor::GetTypeNameFromTypeDescriptor(inputSignalType);
+                REPORT_ERROR(ErrorManagement::ParametersError,
+                        "The type of the input signals shall be float32. inputSignalType = %s", inputSignalTypeStr);
+            }
+            numberOfInputSamples = 0u;
+            if (ok) {
+                ok = GetSignalNumberOfSamples(InputSignals, 1u, numberOfInputSamples);
+            }
+
+            if (ok) {
+                ok = (numberOfInputSamples == 1u);
+            }
+            if (!ok) {
+                REPORT_ERROR(ErrorManagement::ParametersError,
+                        "The number of input signals samples shall be equal to 1. numberOfInputSamples = %d", numberOfInputSamples);
+            }
+            numberOfInputDimensions = 0u;
+            if (ok) {
+                ok = GetSignalNumberOfDimensions(InputSignals, 1u, numberOfInputDimensions);
+            }
+
+            if (ok) {
+                ok = (numberOfInputDimensions == 0u);
+                if (!ok) {
+                    REPORT_ERROR(
+                            ErrorManagement::ParametersError,
+                            "The number of input signals dimensions shall be equal to 0. numberOfInputDimensions(%s) = %d", inputSignalName.Buffer(), numberOfInputDimensions);
+                }
+            }
+            if (ok) {
+                ok = GetSignalNumberOfElements(InputSignals, 1u, numberOfInputElements);
+            }
+            if (ok) {
                 ok = (numberOfInputElements == 4u);
             }
             if (!ok) {
@@ -220,7 +259,8 @@ namespace MARTe {
             }
         }
         if (ok) {
-            inputSignal   = reinterpret_cast<float32 *>(GetInputSignalMemory(0u));
+            triggerSdas = reinterpret_cast<uint32 *>(GetInputSignalMemory(0u));
+            inputSignal   = reinterpret_cast<float32 *>(GetInputSignalMemory(1u));
 /*
             inputElectricTop    = reinterpret_cast<float32 *>(GetInputSignalMemory(0u));
             inputElectricInner  = reinterpret_cast<float32 *>(GetInputSignalMemory(1u));
@@ -309,18 +349,16 @@ namespace MARTe {
     }
 
     bool ElectricProbesGAM::Execute() {
-        //*outputEpZ = 3.4;
-        *outputEpR =  inputSignal[0];
-        *outputEpZ =  inputSignal[0] - inputOffsets[0];
-        //*outputEpR =  (inputSignal[2] - inputOffsets[2]) - 
+        /* inputElectricOuter - inputElectricInner */
+        *outputEpR =  (inputSignal[2] - inputOffset[2]) - 
+            (inputSignal[1] - inputOffset[1]);
+        *outputEpZ =  inputSignal[0] - inputOffset[0];
         //*outputEpZ =  inputSignal[0] - inputSignal[3];
-        //*outputSignal1 = *inputSignals[0] - *inputSignals[1];
 
-        //update the last values
+        /* update the last value arrays */
         for (MARTe::uint32 i = 0u; i < numberOfInputElements; i++) {
 
             if (numberOfSamplesAvg > 2u) {
-                /*lint -e{9117} implicit conversion is safe*/
                 for (MARTe::uint32 k = (numberOfSamplesAvg - 1u); k > 0u; k--) {
                     lastInputs[i][k] = lastInputs[i][k - 1];
                 }
@@ -335,10 +373,19 @@ namespace MARTe {
             lastInputs[1][0] = *inputElectricInner;
             lastInputs[2][0] = *inputElectricOuter;
             lastInputs[3][0] = *inputElectricBottom;
-                                                  //lastInputs[i][0] = input[i][numberOfSamples - 1u];
+                                         
+        lastInputs[i][0] = input[i][numberOfSamples - 1u];
         }
 */
-         return true;
+
+        /* Should use a MARTe2 Message. 
+         * Here for Sdas recorded signel with Trigger pseudo-signal
+         * */
+        if ((lastTriggerSdas == 0u) && (*triggerSdas == 1u)) {
+            CalcOffSets();
+        }
+        lastTriggerSdas = *triggerSdas;
+        return true;
     }
 
     bool ElectricProbesGAM::PrepareNextState(const char8 * const currentStateName,
@@ -404,8 +451,6 @@ namespace MARTe {
     ErrorManagement::ErrorType ElectricProbesGAM::CalcOffSets() {
 
         ErrorManagement::ErrorType ret = MARTe::ErrorManagement::NoError;
-//REPORT_ERROR(ErrorManagement::Information, 
-  //                      "CalcOffSets. numberOfSamplesAvg: %d!", numberOfSamplesAvg);
         REPORT_ERROR(ErrorManagement::Information, 
                         "CalcOffSets. Inputs:%f, %f, %f, %f.",
                         inputSignal[0],
@@ -414,27 +459,26 @@ namespace MARTe {
                         inputSignal[3]);
         if (numberOfSamplesAvg > 1u) {
             for (uint32 i = 0u; i < EP_NUM_INPUTS; i++) {
-                inputOffsets[i] = 0.0f;
+                inputOffset[i] = 0.0f;
                 for (uint32 k =  0 ; k < numberOfSamplesAvg; k++) {
-                    inputOffsets[i] += lastInputs[i][k];
+                    inputOffset[i] += lastInputs[i][k];
                 }
-                inputOffsets[i] /= numberOfSamplesAvg;
+                inputOffset[i] /= numberOfSamplesAvg;
             }
             REPORT_ERROR(ErrorManagement::Information, 
                         "CalcOffSets. Offset:%f, %f, %f, %f.",
-                        inputOffsets[0],
-                        inputOffsets[1],
-                        inputOffsets[2],
-                        inputOffsets[3]);
+                        inputOffset[0],
+                        inputOffset[1],
+                        inputOffset[2],
+                        inputOffset[3]);
         }
 
         return ret;
     }
 
 
-    CLASS_REGISTER(ElectricProbesGAM, "1.0")
+    CLASS_REGISTER(ElectricProbesGAM, "1.1")
 
-//    CLASS_METHOD_REGISTER(ElectricProbesGAM, ElectricProbesGAM::CalcOffSets)
     CLASS_METHOD_REGISTER(ElectricProbesGAM, CalcOffSets)
 
 } /* namespace MARTeIsttok */

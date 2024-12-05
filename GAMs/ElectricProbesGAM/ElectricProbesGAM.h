@@ -153,8 +153,9 @@ namespace MARTe {
              * The input signals
              */
 
+            uint32 *triggerSdas;
             /**
-             * The input signal
+             * The input Electric Probes signals
             */
             float32 *inputSignal;
 
@@ -166,7 +167,7 @@ namespace MARTe {
             */
             uint32 numberOfInputElements;
 
-            float32 inputOffsets[4];
+            float32 inputOffset[4];
 
             MARTe::float32 **lastInputs;
 
@@ -174,7 +175,6 @@ namespace MARTe {
              * The output signals
              */
             // MARTe::float32 **outputSignals;
-            //MARTe::float32 *outputSignal1;
             float32 *outputEpR;
             float32 *outputEpZ;
 
@@ -188,6 +188,10 @@ namespace MARTe {
              */
             StreamString lastStateExecuted;
 
+            /**
+             * Flag to detect SDAS Trigger Edge.
+             */
+            uint32 lastTriggerSdas;
 
     };
 }

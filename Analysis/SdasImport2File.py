@@ -80,8 +80,8 @@ def get_arguments():
                         action='store_true', help='Import Mirnov')
     parser.add_argument('-l', '--langmuir',
                         action='store_true', help='Import Langmuir')
-    parser.add_argument('-t', '--ploT',
-                        action='store_true', help='Plot Signals')
+    parser.add_argument('-t', '--trigger', type=int,
+                        help='Trigger sample', default='0')
     parser.add_argument('-n', '--names',
                         action='store_true', help='Print Node Table')
     parser.add_argument('-z', '--zeros', type=int,
@@ -101,8 +101,13 @@ if (__name__ == "__main__"):
         data, tzero_us, period = LoadSdasData(client, nd['sdas'], pulseNo)
         langmuirData.append(data)
     time = np.arange(len(data), dtype='uint32') * int(period)
+    trigger = np.zeros(len(data), dtype='uint32')
+    if args.trigger > 0:
+        trigger[args.trigger:] = 1
+
     langmuirNp = np.array(langmuirData).T
-    data2file = np.insert(langmuirNp, 0, time,  axis=1)
+    data2file = np.insert(langmuirNp, 0, trigger,  axis=1)
+    data2file = np.insert(data2file, 0, time,  axis=1)
     if args.zeros > 0:
         nCol = data2file.shape[1]
         zerRows = np.zeros([args.zeros, nCol])
@@ -112,8 +117,8 @@ if (__name__ == "__main__"):
 #    head = ('#Time (uint32)[1],Langmuir0 (float32)[1],Langmuir1 (float32)[1],'
 #            'Langmuir2 (float32)[1],Langmuir3 (float32)[1]')
 #    formt = '%d,%.6f,%.6f,%.6f,%.6f'
-    formt = '%d,{%.6f,%.6f,%.6f,%.6f}'
-    head = '#TimeSdas (uint32)[1],LangmuirSignals (float32)[4]'
+    formt = '%d,%d,{%.6f,%.6f,%.6f,%.6f}'
+    head = '#TimeSdas (uint32)[1],Trigger (uint32)[1],LangmuirSignals (float32)[4]'
     np.savetxt(filename, data2file, fmt=formt,
                header=head, comments='')
     # , delimiter=',')
