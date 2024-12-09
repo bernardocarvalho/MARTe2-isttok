@@ -15,6 +15,21 @@ import argparse
 from MdsImportSdas import StartSdas, LoadSdasData
 ISTTOK_RT_PERIOD = 0.0001
 
+
+def build_import_table_magnetic():
+    SDAS_NODEFMT = 'MARTE_NODE_IVO3.DataCollection.Channel_{}'
+    MAGNETIC_OFF = 166
+    NUM_PROBES = 12
+
+    table = []
+    for n in range(NUM_PROBES):
+        sdas_str = SDAS_NODEFMT.format(str(MAGNETIC_OFF + n).zfill(3))
+        nd = {'sdas': sdas_str,
+              'name': f'Mirnov coil no. {n+1}'}
+        table.append(nd)
+    return table
+
+
 def build_import_table_langmuir():
     SDAS_NODEFMT = 'MARTE_NODE_IVO3.DataCollection.Channel_{}'
     LANGMUIR_OFF = 24
@@ -73,7 +88,7 @@ def get_arguments():
     #                    type=int, help='Mds+ pulse Number ([1, ...])',
     #                  default=100)
     parser.add_argument('-f', '--file', type=str,
-                        help='filename device to save', default='LangmuirSdas')
+                        help='filename device to save', default='SdasData')
     parser.add_argument('-e', '--exportData',
                         action='store_true', help='Export to MDSPlus')
     parser.add_argument('-m', '--mirnov',
@@ -93,8 +108,8 @@ if (__name__ == "__main__"):
     args = get_arguments()
     pulseNo = args.pulse
 
-    nodeTable = build_import_table_langmuir()
     client = StartSdas()
+    nodeTable = build_import_table_langmuir()
     langmuirData = []
     for nd in nodeTable:
         print(nd['sdas'])
@@ -106,19 +121,41 @@ if (__name__ == "__main__"):
         trigger[args.trigger:] = 1
 
     langmuirNp = np.array(langmuirData).T
+
+    nodeTable = build_import_table_magnetic()
+    magneticData = []
+    for nd in nodeTable:
+        print(nd['sdas'])
+        data, tzero_us, period = LoadSdasData(client, nd['sdas'], pulseNo)
+        magneticData.append(data)
+
+    magneticNp = np.array(magneticData).T
+
     data2file = np.insert(langmuirNp, 0, trigger,  axis=1)
+    data2file = np.append(data2file, magneticNp,  axis=1)
+
     data2file = np.insert(data2file, 0, time,  axis=1)
     if args.zeros > 0:
         nCol = data2file.shape[1]
         zerRows = np.zeros([args.zeros, nCol])
         data2file = np.insert(data2file, 0, zerRows, axis=0)
+
     fname = f"{args.file:s}_{pulseNo}"
     filename = f"{fname}.csv"
 #    head = ('#Time (uint32)[1],Langmuir0 (float32)[1],Langmuir1 (float32)[1],'
 #            'Langmuir2 (float32)[1],Langmuir3 (float32)[1]')
 #    formt = '%d,%.6f,%.6f,%.6f,%.6f'
-    formt = '%d,%d,{%.6f,%.6f,%.6f,%.6f}'
-    head = '#TimeSdas (uint32)[1],Trigger (uint32)[1],LangmuirSignals (float32)[4]'
+    # formt = '%d,%d,{%.6f,%.6f,%.6f,%.6f}'
+    # head = '#TimeSdas (uint32)[1],Trigger (uint32)[1],LangmuirSignals (float32)[4]'
+
+    formt = ('%d,%d,{%.6f,%.6f,%.6f,%.6f},'
+             '{%.6g,%.6g,%.6g,%.6g,%.6g,%.6g,'
+             '%.6g,%.6g,%.6g,%.6g,%.6g,%.6g}')
+
+    # head = '#TimeSdas (uint32)[1],Trigger (uint32)[1],LangmuirSignals (float32)[4]'
+    head = ('#TimeSdas (uint32)[1],Trigger (uint32)[1],'
+            'LangmuirSignals (float32)[4],'
+            'MagneticSignals (float32)[12]')
     np.savetxt(filename, data2file, fmt=formt,
                header=head, comments='')
     # , delimiter=',')
