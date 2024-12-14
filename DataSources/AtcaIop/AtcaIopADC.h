@@ -50,13 +50,13 @@ namespace MARTe {
     /**
      * The number of signals (2 time signals + ).
      */
-    const uint32 ATCA_IOP_MAX_CHANNELS = 32u;
+//    const uint32 ATCA_IOP_MAX_CHANNELS = 32u;
     
     const uint32 ATCA_IOP_N_TIMCNT = 4u;
     const uint32 ATCA_IOP_N_ADCs = 16u;
     const uint32 ATCA_IOP_N_INTEGRALS = ATCA_IOP_N_ADCs;
-    const uint32 ATCA_IOP_N_SIGNALS = (ATCA_IOP_N_TIMCNT + ATCA_IOP_N_ADCs +
-            ATCA_IOP_N_INTEGRALS);
+    const uint32 ATCA_IOP_N_SIGNALS = (ATCA_IOP_N_TIMCNT + 2); //ATCA_IOP_N_ADCs +
+            //ATCA_IOP_N_INTEGRALS);
     /**
      * The number of buffers to synchronise with the DMA
      */
@@ -66,7 +66,44 @@ namespace MARTe {
      * @brief A DataSource that simulates an ADC board
      * TODO
      * <pre>
-     * +ADCSim = {
+     * +AtcaIopADC = {
+     *    Class = "AtcaIop::AtcaIopADC"
+      CPUMask = "0x040"
+      StackSize = "1048576"
+      DeviceName = "/dev/atca_v6"
+      BoardId = 9
+      DeviceDmaName = "/dev/atca_v6_dmart_2"
+      NumberOfChannels = "12"
+      IsMaster = "1"
+      SleepNature = "Busy"
+      SleepPercentage = "15"
+      ADCFrequency = "2000000"
+      RTDecimation = "200"
+      ChopperPeriod = "2000"
+      ElectricalOffsets = {"-151" "110" "-417" "-35" "-204" "0" "134" "-59" "-227" "-308" "-120" "-175" "0" "0" "0" "0"}
+      WiringOffsets = {"0.0" "0.0" "0.0" "0.0" "0.0" "0.0" "0.0" "0.0" "0.0" "0.0" "0.0" "0.0" "0.0" "0.0" "0.0" "0.0"}
+      //WiringOffsets = {0.354 0.288 -0.010 -0.083 0.347 0.228 0.088 0.186 -0.297 -0.101 0.025 -0.012 0.0 0.0 0.0 0.0}
+      //WiringOffsets = {"0.271" "0.211" "0.098" "0.141" "0.312" "0.203" "0.212" "0.361" "-0.546" "-0.433" "-0.598" "1.362"}
+      Signals = {
+        Counter = {
+          Type = "uint32"
+        }
+        Time = {
+          Type = "uint32"
+        }
+        TimeoutCount = {
+          Type = "uint32"
+        }
+        TimeoutMax = {
+          Type = "uint32"
+        }
+        ADC0Decim = {
+          Type = "int32"
+        }
+        ADC1Decim = {
+          Type = "int32"
+        }
+
      *     Class = ADCSimulator
      *     DeviceName = "/dev/atca_v6" //Mandatory
      *     BoardId = 0          //   Mandatory
@@ -323,12 +360,13 @@ namespace MARTe {
             /**
              * ADC values
              */
-            int32 adcValues[ATCA_IOP_MAX_CHANNELS];
+            //int32 adcValues[ATCA_IOP_N_ADCs];
+            int32 *adcValues;
 
             /**
              * ADC Integral values
              */
-            int64 adcIntegralValues[ATCA_IOP_MAX_CHANNELS];
+            int64 adcIntegralValues[ATCA_IOP_N_ADCs];
 
             /**
              * Number of samples to read on each cycle
@@ -387,12 +425,12 @@ namespace MARTe {
             /**
              * The Electrical Offset Parameters.
              */
-            int32 electricalOffsets[ATCA_IOP_MAX_CHANNELS];
+            int32 electricalOffsets[ATCA_IOP_N_ADCs];
 
             /**
              * The Wiring Offset Parameters.
              */
-            float32 wiringOffsets[ATCA_IOP_MAX_CHANNELS];
+            float32 wiringOffsets[ATCA_IOP_N_ADCs];
 
             /**
              * The ADC chopping period in samples

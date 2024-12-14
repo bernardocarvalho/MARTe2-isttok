@@ -80,11 +80,11 @@ namespace MARTe {
     } DMA_CH1_PCKT;
 
     struct atca_eo_config {
-        int32_t offset[ATCA_IOP_MAX_CHANNELS];
+        int32_t offset[ATCA_IOP_N_ADCs];
     };
 
     struct atca_wo_config {
-        int32_t offset[ATCA_IOP_MAX_CHANNELS];
+        int32_t offset[ATCA_IOP_N_ADCs];
     };
 
     //}
@@ -116,8 +116,8 @@ AtcaIopADC::AtcaIopADC() :
         //pollTimout = 0u;
         adcPeriod = 0.;
         uint32 k;
+        adcValues = NULL_PTR(int32 *);
         for (k=0u; k < ATCA_IOP_N_ADCs; k++) {
-            adcValues[k] = 0u;
             electricalOffsets[k] = 0u;
             wiringOffsets[k] = 0.0;
         }
@@ -159,7 +159,8 @@ AtcaIopADC::~AtcaIopADC() {
         close(boardDmaDescriptor);
         REPORT_ERROR(ErrorManagement::Information, "Close device %d OK", boardDmaDescriptor);
     }
-    uint32 k;
+    adcValues = NULL_PTR(int32 *);
+    //uint32 k;
 }
 
 bool AtcaIopADC::AllocateMemory() {
@@ -180,21 +181,14 @@ bool AtcaIopADC::Initialise(StructuredDataI& data) {
             REPORT_ERROR(ErrorManagement::ParametersError, "The BoardId shall be specified");
         }
     }
-    /*
-       if (ok) {
-       ok = data.Read("DeviceDmaName", deviceDmaName);
-       if (!ok) {
-       REPORT_ERROR(ErrorManagement::ParametersError, "The DeviceDmaName shall be specified");
-       }
-       }
-       */
+    numberOfChannels = 0u;
     if (ok) {
         ok = data.Read("NumberOfChannels", numberOfChannels);
         if (!ok) {
             REPORT_ERROR(ErrorManagement::ParametersError, "The NumberOfChannels shall be specified");
         }
-        if (numberOfChannels > ATCA_IOP_MAX_CHANNELS ) {
-            numberOfChannels = ATCA_IOP_MAX_CHANNELS;
+        if (numberOfChannels > ATCA_IOP_N_ADCs ) {
+            numberOfChannels = ATCA_IOP_N_ADCs;
         }
     }
     if (ok) {
@@ -237,9 +231,9 @@ bool AtcaIopADC::Initialise(StructuredDataI& data) {
     }
     if (ok) {
         numberOfElements = arrayDescription.GetNumberOfElements(0u);
-        ok = (numberOfElements == ATCA_IOP_N_ADCs);
+        ok = (numberOfElements == numberOfChannels);
         if (!ok) {
-            REPORT_ERROR(ErrorManagement::ParametersError, "Exactly %d elements shall be defined in the array ElectricalOffsets", ATCA_IOP_N_ADCs);
+            REPORT_ERROR(ErrorManagement::ParametersError, "Exactly %d elements shall be defined in the array ElectricalOffsets", numberOfChannels);
         }
     }
     if (ok) {
@@ -254,9 +248,9 @@ bool AtcaIopADC::Initialise(StructuredDataI& data) {
     }
     if (ok) {
         numberOfElements = arrayDescription.GetNumberOfElements(0u);
-        ok = (numberOfElements == ATCA_IOP_N_ADCs);
+        ok = (numberOfElements == numberOfChannels);
         if (!ok) {
-            REPORT_ERROR(ErrorManagement::ParametersError, "Exactly %d elements shall be defined in the array WiringOffsets", ATCA_IOP_N_ADCs);
+            REPORT_ERROR(ErrorManagement::ParametersError, "Exactly %d elements shall be defined in the array WiringOffsets", numberOfChannels);
         }
     }
     if (ok) {
@@ -312,7 +306,6 @@ bool AtcaIopADC::SetConfiguredDatabase(StructuredDataI& data) {
     struct atca_eo_config eo_conf;
     struct atca_wo_config wo_conf;
     //The DataSource shall have N signals. 
-    //The first two are uint32 (counter and time) a
     //
     if (ok) {
         ok = (GetNumberOfSignals() == ATCA_IOP_N_SIGNALS);
@@ -333,47 +326,45 @@ bool AtcaIopADC::SetConfiguredDatabase(StructuredDataI& data) {
             REPORT_ERROR(ErrorManagement::ParametersError, "The signal in position %d shall have 32 bits and %d were specified", i, uint16(GetSignalType(i).numberOfBits));
         }
     }
+    ok = (GetSignalType(4u).type == SignedInteger);
+    if (!ok) {
+        REPORT_ERROR(ErrorManagement::ParametersError, "The signal 4 shall be of type SignedInteger");
+    }
+    ok = (GetSignalType(4u).numberOfBits == 32u);
+    if (!ok) {
+        REPORT_ERROR(ErrorManagement::ParametersError, "The signal in position %d shall have 32 bits and %d were specified", i, uint16(GetSignalType(i).numberOfBits));
+    }
+    uint8 nDimensions = 0u;
+    uint32 nElements = 0u;
+    ok = GetSignalNumberOfDimensions(4u, nDimensions);
+    if (ok) {
+        ok = GetSignalNumberOfElements(4u, nElements);
+        REPORT_ERROR(ErrorManagement::Information, "The signal 4 shall has %d Elements", nElements);
+    }
     startPos = endPos;
     endPos = startPos + ATCA_IOP_N_ADCs;
-    for (i=startPos; (i < endPos) && (ok); i++) {
-        ok = (GetSignalType(i).type == SignedInteger);
-        if (!ok) {
-            REPORT_ERROR(ErrorManagement::ParametersError, "The signal %d shall be of type SignedInteger", i);
-        }
-        ok = (GetSignalType(i).numberOfBits == 32u);
-        if (!ok) {
-            REPORT_ERROR(ErrorManagement::ParametersError, "The signal in position %d shall have 32 bits and %d were specified", i, uint16(GetSignalType(i).numberOfBits));
-        }
+    if (ok) {
+        ok = (GetSignalType(5u).type == SignedInteger);
     }
-    startPos = endPos;
-    endPos = startPos + ATCA_IOP_N_INTEGRALS;
-    for (i=startPos; (i < endPos) && (ok); i++) {
-        ok = (GetSignalType(i).type == SignedInteger);
-        if (!ok) {
-            REPORT_ERROR(ErrorManagement::ParametersError, "The signal %d shall be of type SignedInteger", i);
-        }
-        ok = (GetSignalType(i).numberOfBits == 64u);
-        if (!ok) {
-            REPORT_ERROR(ErrorManagement::ParametersError, "The signal in position %d shall have 64 bits and %d were specified", i, uint16(GetSignalType(i).numberOfBits));
-        }
+    if (!ok) {
+        REPORT_ERROR(ErrorManagement::ParametersError, "The signal 4 shall be of type SignedInteger");
     }
-    startPos = endPos;
-    endPos = ATCA_IOP_N_SIGNALS;
-    for (i=startPos; (i < endPos) && (ok); i++) {
-        ok = (GetSignalType(i).type == SignedInteger);
-        if (!ok) {
-            REPORT_ERROR(ErrorManagement::ParametersError, "The signal %d shall be of type SignedInteger", i);
-        }
-        ok = (GetSignalType(i).numberOfBits == 32u);
-        if (!ok) {
-            REPORT_ERROR(ErrorManagement::ParametersError, "The signal in position %d shall have 32 bits and %d were specified", i, uint16(GetSignalType(i).numberOfBits));
-        }
+    ok = (GetSignalType(5u).numberOfBits == 64u);
+    if (!ok) {
+        REPORT_ERROR(ErrorManagement::ParametersError, "The signal in position 5 shall have 64 bits and %d were specified", uint16(GetSignalType(i).numberOfBits));
+    }
+    nDimensions = 0u;
+    nElements = 0u;
+    if (!ok) {
+        ok = GetSignalNumberOfDimensions(5u, nDimensions);
+    }
+    if (ok) {
+        ok = GetSignalNumberOfElements(5u, nElements);
     }
     StreamString fullDeviceName;
     //Configure the board
     if (ok) {
         ok = fullDeviceName.Printf("%s_%d", deviceName.Buffer(), boardId);
-        //ok = fullDeviceName.Printf("%s", deviceName.Buffer());
     }
     if (ok) {
         ok = fullDeviceName.Seek(0LLU);
@@ -390,7 +381,6 @@ bool AtcaIopADC::SetConfiguredDatabase(StructuredDataI& data) {
     ok = fullDeviceName.Seek(0LLU);
     if (ok) {
         ok = fullDeviceName.Printf("%s_dmart_%d", deviceName.Buffer(), boardId);
-        //ok = fullDeviceName.Printf("%s", deviceName.Buffer());
     }
     if (ok) {
         ok = fullDeviceName.Seek(0LLU);
@@ -434,7 +424,7 @@ bool AtcaIopADC::SetConfiguredDatabase(StructuredDataI& data) {
     else
         rc = ioctl(boardFileDescriptor, ATCA_PCIE_IOPT_CHOP_OFF);
 
-    for (i=0u; i < ATCA_IOP_MAX_CHANNELS ; i++) {
+    for (i=0u; i < ATCA_IOP_N_ADCs ; i++) {
         eo_conf.offset[i] = 0u;
         wo_conf.offset[i] = 0.0;
     }
@@ -569,6 +559,9 @@ bool AtcaIopADC::SetConfiguredDatabase(StructuredDataI& data) {
                     totalNumberOfSamplesPerSecond, adcFrequency);
         }
     }
+    if (ok) {
+        adcValues = new int32[numberOfChannels];
+    }
     return ok;
 }
 
@@ -591,6 +584,13 @@ bool AtcaIopADC::GetSignalMemoryBuffer(const uint32 signalIdx, const uint32 buff
     else if (signalIdx == 3u) {
         signalAddress = &timeoutMax;
     }
+    else if (signalIdx == 4u) {
+        signalAddress = &adcValues[0]; //signalIdx - ATCA_IOP_N_TIMCNT]cwtimeoutMax;
+    }
+    else if (signalIdx == 5u) {
+        signalAddress = &adcIntegralValues[0]; //signalIdx - ATCA_IOP_N_TIMCNT]cwtimeoutMax;
+    }
+    /*
     else if (signalIdx < ATCA_IOP_N_TIMCNT + ATCA_IOP_N_ADCs ) {
         signalAddress = &adcValues[signalIdx - ATCA_IOP_N_TIMCNT];
     }
@@ -598,6 +598,7 @@ bool AtcaIopADC::GetSignalMemoryBuffer(const uint32 signalIdx, const uint32 buff
         signalAddress = &adcIntegralValues[signalIdx -
             (ATCA_IOP_N_TIMCNT + ATCA_IOP_N_ADCs)];
     }
+    */
     else {
         ok = false;
     }
