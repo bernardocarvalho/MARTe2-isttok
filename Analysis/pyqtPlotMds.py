@@ -21,11 +21,16 @@ app = pg.mkQApp("Plotting MARTe2 AtcaIop Data")
 # mw.resize(800,800)
 
 # MAX_SAMPLES = 50000
-ADC_CHANNELS = 14  # channels stored in ISTTOK
-ADC_DECIM_RATE = 200
+ADC_CHANNELS = 14  # channels stored in ISTTOK MDS
+ADC_DECIM_RATE = 200 # FPGA decimation
+ADC_NODE = '\\TOP.HARDWARE.ATCA_2.IOP_9.CHANNEL_{}.ADC_DECIM'
+ADC_NODE_D = '\\TOP.HARDWARE.ATCA_2.IOP_9.CHANNEL_{}.ADC_DECIM_D'
 
-parser = argparse.ArgumentParser(description=
-        """Script to plot AtcaIop MDSplus data and calc drifts
+ADC_INTEG = '\\TOP.HARDWARE.ATCA_2.IOP_9.CHANNEL_{}.ADC_INTEG'
+ADC_INTEG_D = '\\TOP.HARDWARE.ATCA_2.IOP_9.CHANNEL_{}.ADC_INTEG_D'
+
+parser = argparse.ArgumentParser(
+        description="""Script to plot AtcaIop MDSplus data and calc drifts
         To change EPICS EO, WO use. e.g.
         caput -a ISTTOK:central:ATCAIOP1-WO 14 0.191 0.174 -0.036 -0.044 0.183 0.126 0.020 0.140 -0.461 -0.572 0.022 -0.262 0.475 0.353""")
 
@@ -40,8 +45,8 @@ parser.add_argument('-s', '--shot', type=int,
                     help='Mds+ pulse Number ([1, ...])', default=100)
 parser.add_argument('-m', '--maxpoints', type=int,
                     help='Max points to plot', default=50000)
-parser.add_argument('-e', '--averages', action='store_true',
-                    help='Calc averages')
+parser.add_argument('-a', '--averages', action='store_true',
+                    help='calc Averages')
 parser.add_argument('-d', '--decimated', action='store_true',
                     help='Use decimated data')
 # parser.add_argument('-w', '--drift', action='store_true', help='Calc drifts')
@@ -51,7 +56,21 @@ parser.add_argument('-z', '--zero', action='store_true',
 args = parser.parse_args()
 mdsPulseNumber = args.shot
 
-mdsTreeName = 'rtappisttok'
+# mdsTreeName = 'rtappisttok'
+mdsTreeName = 'isttokmarte'
+
+
+def getMdsData(tree, node):
+    try:
+        mdsNode = tree.getNode(node)
+        data = mdsNode.getData().data()
+    # except Exception:
+    except mds.mdsExceptions.TreeNODATA:
+        print(f'Failed getMdsData for note {node:s}')
+        exit()
+
+    return data
+
 
 try:
     tree = mds.Tree(mdsTreeName, mdsPulseNumber)
@@ -68,6 +87,7 @@ win.setWindowTitle('pyqtgraph example: Plotting')
 pg.setConfigOptions(antialias=True)
 
 p1 = win.addPlot(title="ATCA-IOP ADC raw data")
+p1.setDownsampling(ds=200)
 # add plt.addLegend() BEFORE you create the curves.
 # mdsNode = tree.getNode("ATCAIOP1.ADC0RAW")
 # dataAdc = mdsNode.getData().data()
@@ -80,20 +100,24 @@ meanD = np.zeros(ADC_CHANNELS, dtype=int)
 driftW = np.zeros(ADC_CHANNELS)
 total_samples = 0
 for i in range(ADC_CHANNELS):
-    mdsNode = tree.getNode(f"ATCAIOP1.ADC{i}RAW")
-    dataAdc = mdsNode.getData().data()
+    # mdsNode = tree.getNode(f"ATCAIOP1.ADC{i}RAW")
+    # mdsNode = tree.getNode(ADC_NODE.format(i))
+    # dataAdc = mdsNode.getData().data()
+    dataAdc = getMdsData(tree, ADC_NODE.format(i))
     meanD[i] = np.mean(dataAdc[:, 0]).astype(int)
-    mdsNode = tree.getNode(f"ATCAIOP1.ADC{i}INT")
-    dataAdcInt = mdsNode.getData().data()
+    # mdsNode = tree.getNode(ADC_INTEG.format(i))
+    # mdsNode = tree.getNode(f"ATCAIOP1.ADC{i}INT")
+    # dataAdcInt = mdsNode.getData().data()
+    dataAdcInt = getMdsData(tree, ADC_INTEG.format(i))
     total_samples = ADC_DECIM_RATE * len(dataAdcInt[:, 0])
     driftW[i] = (dataAdcInt[-1, 0] - dataAdcInt[0, 0]) / total_samples
 
 if (args.averages):
-    print(f"{ADC_CHANNELS} EO: ", end='')
+    print(f"EO: {ADC_CHANNELS} ", end='')
     for i in range(ADC_CHANNELS):
         print(f"{meanD[i]:d} ", end='')
     print(" ")
-    print(f"{ADC_CHANNELS} WO: ", end='')
+    print(f"WO: {ADC_CHANNELS} ", end='')
     for i in range(ADC_CHANNELS):
         print(f"{driftW[i]:0.3f} ", end='')
     print(" ")
@@ -101,7 +125,8 @@ if (args.averages):
 
 
 for i in range(start, stop):
-    mdsNode = tree.getNode(f"ATCAIOP1.ADC{i}RAW")
+    # mdsNode = tree.getNode(f"ATCAIOP1.ADC{i}RAW")
+    mdsNode = tree.getNode(ADC_NODE.format(i))
     dataAdc = mdsNode.getData().data()
     timeData = mdsNode.getDimensionAt(0).data()
     y = dataAdc[:args.maxpoints, 0]
@@ -110,8 +135,9 @@ for i in range(start, stop):
 # p1.setLabel('bottom', "Y Axis", units='s')
 
 win.nextRow()
-p4 = win.addPlot(title="Channel Integrals")
-p4.addLegend()
+p2 = win.addPlot(title="Channel Integrals")
+p2.setDownsampling(ds=200)
+p2.addLegend()
 # for i in range(8,12):
 start = args.irange[0] - 1
 stop = args.irange[1]
@@ -119,12 +145,14 @@ stop = args.irange[1]
 for i in range(start, stop):
     # mdsNode = tree.getNode(f"ATCAIOP1.ADC8INT")
     if args.decimated:
-        node = f"ATCAIOP1.ADC{i}INTD"
+        node = tree.getNode(ADC_INTEG_D.format(i))
     else:
-        node = f"ATCAIOP1.ADC{i}INT"
+        # node = f"ATCAIOP1.ADC{i}INT"
+        node = tree.getNode(ADC_INTEG.format(i))
     mdsNode = tree.getNode(node)
     try:
-        dataAdcInt = mdsNode.getData().data()
+        dataAdcInt = getMdsData(tree, node)
+        # dataAdcInt = mdsNode.getData().data()
         timeData = mdsNode.getDimensionAt(0).data()
         total_samples = len(dataAdcInt[:, 0])
         y = dataAdcInt[:args.maxpoints, 0] / 2.0e6  # LSB * sec
@@ -136,13 +164,14 @@ for i in range(start, stop):
             y = y - dataAdcInt[0, 0] / 2.0e6  # LSB * sec
             # wo =  (dataAdcInt[-1, 0] - dataAdcInt[0, 0]) /total_samples
             # print(f"{wo:0.4f} ", end='')
-        p4.plot(x, y, pen=pg.mkPen(i, width=2), name=f"Ch {i+1}")
+        p2.plot(x, y, pen=pg.mkPen(i, width=2), name=f"Ch {i+1}")
     except Exception:
         print(f"No data for {node}")
 
 print(" ")
 
-p4.setLabel('bottom', "Time", units='s')
+p2.setLabel('bottom', "Time", units='s')
+p2.setLabel('left', "Integ", units='lsb.s')
 
 # updatePlot()
 
