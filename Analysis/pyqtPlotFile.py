@@ -19,7 +19,8 @@ app = pg.mkQApp("Plotting MARTe2 AtcaIop Data")
 # mw.resize(800,800)
 
 # MAX_SAMPLES = 50000
-ADC_CHANNELS = 14  # channels stored in ISTTOK
+# ADC_CHANNELS = 14  # channels stored in ISTTOK
+MAG_OFFSET = 6  # channels stored in ISTTOK
 ADC_DECIM_RATE = 200
 
 parser = argparse.ArgumentParser(description=
@@ -85,23 +86,48 @@ p1.showGrid(x=True, y=True, alpha=0.5)
 
 win.nextRow()
 
-p2 = win.addPlot(title="MARTE2 output data")
+p2 = win.addPlot(title="MARTE2 output Langmuir data")
 dataOut = np.genfromtxt('../Startup/IsttokOutput.csv', delimiter=',')
 p2.addLegend()
 x = dataOut[:args.maxpoints, 0] / 1e3  # us -> ms
-y = dataOut[:args.maxpoints, 1]
+#y = dataOut[:args.maxpoints, 1]
 # for i in range(1, 5):
-lineName = ['Time', 'OutMdsW0', 'OutMdsW1', 'OutMdsW2', 'OutMdsW3']
+lineName = ['Time', 'OutLang0', 'OutLang1', 'OutLangR', 'OutLangZ']
 for i in [1, 2, 3, 4,]:
     y = dataOut[:args.maxpoints, i]
     p2.plot(y, pen=pg.mkPen(i, width=2), name=lineName[i])
 
 p2.showGrid(x=True, y=True, alpha=0.5)
-# p2.plot(x, y)  # , pen=pg.mkPen(i, width=2))  # , name=f"Ch {i+1}")
 
-p2.setLabel('bottom', "Time", units='ms')
+# p2.setLabel('bottom', "Time", units='ms')
 # print("WO: ", end='')
 # updatePlot()
+
+win.nextRow()
+p3 = win.addPlot(title="SDAS Mag Probe data")
+lineName = ['Time', 'Trigger',
+            'ElectricTop', 'ElectricInner', 'ElectricOuter', 'ElectricBottom']
+for i in [0, 1, 2, 3]:
+    y = dataSdas[:args.maxpoints, i + MAG_OFFSET]
+    p3.plot(y, pen=pg.mkPen(i, width=2), name=lineName[i])
+
+p3.showGrid(x=True, y=True, alpha=0.5)
+
+win.nextRow()
+
+p4 = win.addPlot(title="MARTE2 output Magnetic data")
+# dataOut = np.genfromtxt('../Startup/IsttokOutput.csv', delimiter=',')
+p4.addLegend()
+x = dataOut[:args.maxpoints, 0] / 1e3  # us -> ms
+lineName = ['Time', 'OutLang0', 'OutLang1', 'OutLangR', 'OutLangZ',
+            'MagOutR', 'MagOutZ']
+for i in [5]:
+    y = dataOut[:args.maxpoints, i]
+    p4.plot(y, pen=pg.mkPen(i, width=2), name=lineName[i])
+
+p4.showGrid(x=True, y=True, alpha=0.5)
+
+p4.setLabel('bottom', "Sample")  # , units='ms')
 
 if __name__ == '__main__':
     # import sys

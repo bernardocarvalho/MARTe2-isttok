@@ -19,8 +19,11 @@ export MDSPLUS_DIR=/usr/local/mdsplus
 export default_tree_path=$MARTe2_HOME/mdsplus-trees
 export rtappdemo_path=~/git-repos/MARTe2-isttok/Trees
 export rtappwriter_path=~/git-repos/MARTe2-isttok/Trees
-export isttoksdas_path=~/git-repos/MARTe2-isttok/Trees
-export isttokoutput_path=~/git-repos/MARTe2-isttok/Trees
+# export isttoksdas_path=~/git-repos/MARTe2-isttok/Trees
+export isttoksdas_path=/home/mdsplus/Trees
+# export isttokoutput_path=~/git-repos/MARTe2-isttok/Trees
+export isttokoutput_path=/home/mdsplus/Trees
+export isttokmarte_path=/home/mdsplus/Trees
 # export rtappisttok_path=$MARTe2_HOME/mdsplus-trees
 
 export PATH=$MDSPLUS_DIR/bin:$EPICS_BASE/bin/$EPICS_HOST_ARCH:$PATH
