@@ -22,6 +22,7 @@ app = pg.mkQApp("Plotting MARTe2 AtcaIop Data")
 # mw.resize(800,800)
 
 # MAX_SAMPLES = 50000
+MDSPLUS_HOST = "192.168.1.173"
 ADC_CHANNELS = 14  # channels stored in ISTTOK MDS
 ADC_DECIM_RATE = 200 # FPGA decimation
 ADC_RAW = '\\TOP.HARDWARE.ATCA_2.IOP_9.CHANNEL_{}.ADC_DECIM'
@@ -81,7 +82,7 @@ except mds.mdsExceptions.TreeFOPENR:
     exit()
 """
 
-client = mdsClient()
+client = mdsClient(MDSPLUS_HOST, user='oper')
 client.openTree(mdsTreeName, args.shot)
 
 win = pg.GraphicsLayoutWidget(show=True, title="Basic plotting examples")
