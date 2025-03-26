@@ -7,6 +7,20 @@
 #MARTe2_Components_DIR=$MARTe2_HOME/MARTe2-components
 #MARTe2_Demos_DIR=$MARTe2_HOME/MARTe2-demos-padova
 #EPICS_BASE=
+MARTe2_HOME=$HOME/git-repos
+
+MARTe2_DIR=$MARTe2_HOME/MARTe2-dev
+MARTe2_Components_DIR=$MARTe2_HOME/MARTe2-components
+# export MARTe2_Demos_DIR=~/git-repos/MARTe2-demos-padova
+
+export EPICS_BASE=/opt/epics/epics-base
+export EPICSPVA=/opt/epics/epics-base
+export EPICS_HOST_ARCH=linux-x86_64
+
+EPICS_CA_ADDR_LIST="localhost 192.168.1.110"
+# export EPICS_CA_ADDR_LIST="localhost"
+EPICS_CA_AUTO_ADDR_LIST="NO"
+isttokmarte_path=/home/oper/mdsplus-trees
 
 MDS=0
 DEBUG=""

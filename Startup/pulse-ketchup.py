@@ -7,7 +7,8 @@ from MDSplus.mdsExceptions import TreeFOPENR
 import argparse
 
 
-MDSTREENAME = 'rtappisttok'
+# MDSTREENAME = 'isttokmdsplus'
+MDSTREENAME = 'isttokmarte'
 
 
 def main(args):
@@ -25,7 +26,7 @@ def main(args):
               f'pulse number {mdsPulseNumber:d}')
         exit()
 
-    print(f'Last Pulse for {MDSTREENAME}  is {mdsPulseNumber:d}')
+    print(f'Last Pulse for {MDSTREENAME} is now {mdsPulseNumber:d}')
 
 
 if __name__ == '__main__':
