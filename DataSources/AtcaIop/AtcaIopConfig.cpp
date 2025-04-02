@@ -339,11 +339,13 @@ namespace MARTe {
             REPORT_ERROR(ErrorManagement::ParametersError, "Fail Write  wo0:%6.3f", woValues[0]);
             ok = false;
         }
+        /* Reset is done by fiber
         rv = ioctl(devFileDescriptor, ATCA_PCIE_IOPT_RST_INTEG);
         if (rv ) {
             REPORT_ERROR(ErrorManagement::ParametersError, "Fail reset Integrators");
             ok = false;
         }
+        */
         return ok;
     }
 

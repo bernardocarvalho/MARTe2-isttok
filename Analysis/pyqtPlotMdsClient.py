@@ -145,6 +145,7 @@ p2.addLegend()
 start = args.irange[0] - 1
 stop = args.irange[1]
 # print("WO: ", end='')
+dataIntAll = []
 for i in range(start, stop):
     # mdsNode = tree.getNode(f"ATCAIOP1.ADC8INT")
     if args.decimated:
@@ -154,8 +155,8 @@ for i in range(start, stop):
         node = ADC_INTEG.format(i)
     # mdsNode = tree.getNode(node)
     try:
-        dataAdc = client.getData(node)
-        # dataAdcInt = getMdsData(tree, node)
+        dataAdcInt = client.getData(node)
+        dataIntAll.append(dataAdcInt[:, 0])
         timeData = client.getTime(node)
         total_samples = len(dataAdcInt[:, 0])
         y = dataAdcInt[:args.maxpoints, 0] / 2.0e6  # LSB * sec
@@ -165,7 +166,6 @@ for i in range(start, stop):
         x *= ADC_DECIM_RATE
         if (args.zero):
             y = y - dataAdcInt[0, 0] / 2.0e6  # LSB * sec
-            # wo =  (dataAdcInt[-1, 0] - dataAdcInt[0, 0]) /total_samples
             # print(f"{wo:0.4f} ", end='')
         p2.plot(x, y, pen=pg.mkPen(i, width=2), name=f"Ch {i+1}")
     except Exception:
@@ -176,6 +176,7 @@ print(" ")
 p2.setLabel('bottom', "Time", units='s')
 p2.setLabel('left', "Integ", units='lsb.s')
 p2.setDownsampling(ds=200, auto=False)
+p2.setYRange(-4, 4)
 
 # updatePlot()
 
