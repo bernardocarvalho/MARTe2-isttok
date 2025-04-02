@@ -1,0 +1,29 @@
+2 Aprl 2025
+
+Shot 101
+12 channels Square 8.5  Hz , 500mVpp
+
+Shot 102
+12 channels Short Circuit
+ python3 pyqtPlotMdsClient.py -s 102 -a
+EO: 14 -159 87 -388 -34 -211 -6 120 -32 -265 -286 -98 -151 -467 -315  
+WO: 14 0.160 -0.408 -0.009 0.160 0.115 0.449 2.612 0.117 0.177 3.715 -0.080 0.029 0.244 0.163  
+Samples 7189600, time 3594.800 ms
+
+
+Shot 103
+12 channels Connected, no fields
+
+Shot 104
+12 channels Connected, no fields. ATCA1 RT connected
+
+Pulse <= 52128
+Shot 103
+12 channels Connected, no fields
+
+Pulse = 52128
+ATCA2 Trigger : -2500 ms, Width 20us
+
+Pulse >= 52129
+ATCA2 Trigger : -100 ms, Width 20us
+
