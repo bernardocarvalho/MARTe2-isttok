@@ -1,3 +1,6 @@
+caput -a ISTTOK:central:ATCAIOP1-WO 16 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+caput -a ISTTOK:central:ATCAIOP1-EO 16 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+
 2 Aprl 2025
 
 Shot 101
@@ -26,4 +29,37 @@ ATCA2 Trigger : -2500 ms, Width 20us
 
 Pulse >= 52129
 ATCA2 Trigger : -100 ms, Width 20us
+
+8 April
+
+Pulse = 108
+Old : ISTTOK:central:ATCAIOP1-WO 16 0.16 -0.408 -0.009 0.16 0.115 0.449 2.612 0.117 0.177 3.715 -0.08 0.029 0.244 0.163 0 0
+New : ISTTOK:central:ATCAIOP1-WO 16 0.019 -0.222 -0.319 -0.072 0.004 0 -0.002 0.001 0.005 0.005 0.002 0.003 0.008 0.006 0 0
+
+
+Pulse = 109
+New : ISTTOK:central:ATCAIOP1-WO 16 0.083 -0.217 -0.061 -0.254 0 -0 0 0 0 0 0 0 0 0 0 0
+New : ISTTOK:central:ATCAIOP1-EO 16 -396 -33 143 -55 0 3 0 0 0 0 0 0 0 0 0 0
+
+14 April
+
+Pulse => 52275
+All 12 modules with range +- 4V(?)
+
+caput -a ISTTOK:central:ATCAIOP1-EO 14 -403 -39 138 -17 -215 -2 -126 -228 -465 -315 -101 -148 0 0 
+
+Pulse = 52286
+Old : ISTTOK:central:ATCAIOP1-EO 16 -396 -33 143 -55 0 3 0 0 0 0 0 0 0 0 0 0
+New : ISTTOK:central:ATCAIOP1-EO 16 -403 -39 138 -17 -215 -2 -126 -228 -465 -315 -101 -148 0 0 0 0
+
+Old : ISTTOK:central:ATCAIOP1-WO 16 0.083 -0.217 -0.061 -0.254 0 -0 0 0 0 0 0 0 0 0 0 0
+New : ISTTOK:central:ATCAIOP1-WO 16 -0.049 0.265 -0.102 0.245 0.037 0.012 -0.035 -0.038 0.031 0.718 -0.083 0.076 0 0 0 0
+
+
+
+14 May  2025
+
+caput -a ISTTOK:central:ATCAIOP1-EO 14 -393 -28 134 -45 -211 7 -157 -248 -469 -323 -122 -183 0 0 
+New : ISTTOK:central:ATCAIOP1-WO 16 -0.051 -0.036 -0.289 -0.049 0.024 -0.209 -0.114 -0.09 -0.221 -0.006 -0.167 -0.157 0 0 0 0
+Pulse = 52706 : 4kA 4 semi cycles
 
