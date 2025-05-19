@@ -11,10 +11,8 @@ caput -a ISTTOK:central:ATCAIOP1-WO 14 0.191 0.174 -0.036 -0.044 0.183 0.126 0.0
 import numpy as np
 
 import pyqtgraph as pg
-# from pyqtgraph.Qt import QtCore
-# from MDSplus import Tree
 from mdsClient import mdsClient
-# import MDSplus as mds
+from mdsthin.exceptions import TreeNNF
 import argparse
 
 app = pg.mkQApp("Plotting MARTe2 AtcaIop Data")
@@ -24,11 +22,12 @@ app = pg.mkQApp("Plotting MARTe2 AtcaIop Data")
 # MAX_SAMPLES = 50000
 MDSPLUS_HOST = "192.168.1.173"
 ADC_CHANNELS = 14  # channels stored in ISTTOK MDS
-ADC_DECIM_RATE = 200 # FPGA decimation
+ADC_DECIM_RATE = 200  # FPGA decimation
 ADC_RAW = '\\TOP.HARDWARE.ATCA_2.IOP_9.CHANNEL_{}.ADC_DECIM'
 ADC_RAW_D = '\\TOP.HARDWARE.ATCA_2.IOP_9.CHANNEL_{}.ADC_DECIM_D'
 
 ADC_INTEG = '\\TOP.HARDWARE.ATCA_2.IOP_9.CHANNEL_{}.ADC_INTEG'
+SIG_INTEG = "\\TOP.DIAGNOSTICS.MAGNETICS.MIRNOV:PROBE{}.SIG"
 ADC_INTEG_D = '\\TOP.HARDWARE.ATCA_2.IOP_9.CHANNEL_{}.ADC_INTEG_D'
 
 parser = argparse.ArgumentParser(
@@ -60,27 +59,6 @@ mdsPulseNumber = args.shot
 
 # mdsTreeName = 'rtappisttok'
 mdsTreeName = 'isttokmarte'
-
-"""
-def getMdsData(tree, node):
-    try:
-        mdsNode = tree.getNode(node)
-        data = mdsNode.getData().data()
-    # except Exception:
-    except mds.mdsExceptions.TreeNODATA:
-        print(f'Failed getMdsData for note {node:s}')
-        exit()
-
-    return data
-
-
-try:
-    tree = mds.Tree(mdsTreeName, mdsPulseNumber)
-# except Exception:
-except mds.mdsExceptions.TreeFOPENR:
-    print(f'Failed opening {mdsTreeName} for pulse number {mdsPulseNumber:d}')
-    exit()
-"""
 
 client = mdsClient(MDSPLUS_HOST, user='oper')
 client.openTree(mdsTreeName, args.shot)
@@ -138,34 +116,33 @@ for i in range(start, stop):
 
 win.nextRow()
 p2 = win.addPlot(title="Channel Integrals")
-p2.setDownsampling(ds=200, auto=False)
+# p2.setDownsampling(ds=200, auto=False)
 p2.showGrid(x=True, y=True)  # , alpha=0.5)
 p2.addLegend()
-# for i in range(8,12):
 start = args.irange[0] - 1
 stop = args.irange[1]
 # print("WO: ", end='')
-dataIntAll = []
+# dataIntAll = []
 for i in range(start, stop):
     # mdsNode = tree.getNode(f"ATCAIOP1.ADC8INT")
     if args.decimated:
         node = ADC_INTEG_D.format(i)
     else:
         # node = f"ATCAIOP1.ADC{i}INT"
-        node = ADC_INTEG.format(i)
+        node = SIG_INTEG.format(i + 1)
     # mdsNode = tree.getNode(node)
     try:
         dataAdcInt = client.getData(node)
-        dataIntAll.append(dataAdcInt[:, 0])
+        # dataIntAll.append(dataAdcInt[:, 0])
         timeData = client.getTime(node)
         total_samples = len(dataAdcInt[:, 0])
-        y = dataAdcInt[:args.maxpoints, 0] / 2.0e6  # LSB * sec
+        y = dataAdcInt[:args.maxpoints, 0]  #  / 2.0e6  # LSB * sec
         x = np.arange(len(y)) / 2.0e6  # in sec
         # if args.decimated:
         total_samples *= ADC_DECIM_RATE
         x *= ADC_DECIM_RATE
         if (args.zero):
-            y = y - dataAdcInt[0, 0] / 2.0e6  # LSB * sec
+            y = y - dataAdcInt[0, 0] # / 2.0e6  # LSB * sec
             # print(f"{wo:0.4f} ", end='')
         p2.plot(x, y, pen=pg.mkPen(i, width=2), name=f"Ch {i+1}")
     except Exception:
@@ -176,7 +153,8 @@ print(" ")
 p2.setLabel('bottom', "Time", units='s')
 p2.setLabel('left', "Integ", units='lsb.s')
 p2.setDownsampling(ds=200, auto=False)
-p2.setYRange(-4, 4)
+# p2.setXRange(0, 2, padding=0)
+# p2.setYRange(-4, 4)
 
 # updatePlot()
 
@@ -188,3 +166,25 @@ if __name__ == '__main__':
     # iprint("xwc")
     pg.exec()
 # vim: syntax=python ts=4 sw=4 sts=4 sr et
+
+"""
+def getMdsData(tree, node):
+    try:
+        mdsNode = tree.getNode(node)
+        data = mdsNode.getData().data()
+    # except Exception:
+    except mds.mdsExceptions.TreeNODATA:
+        print(f'Failed getMdsData for note {node:s}')
+        exit()
+
+    return data
+
+
+try:
+    tree = mds.Tree(mdsTreeName, mdsPulseNumber)
+# except Exception:
+except mds.mdsExceptions.TreeFOPENR:
+    print(f'Failed opening {mdsTreeName} for pulse number {mdsPulseNumber:d}')
+    exit()
+"""
+
