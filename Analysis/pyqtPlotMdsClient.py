@@ -15,6 +15,8 @@ from mdsClient import mdsClient
 from mdsthin.exceptions import TreeNNF
 import argparse
 
+from ClientMdsThin import ClientMdsThin as Mclient
+
 app = pg.mkQApp("Plotting MARTe2 AtcaIop Data")
 # mw = QtWidgets.QMainWindow()
 # mw.resize(800,800)
@@ -57,6 +59,9 @@ parser.add_argument('-z', '--zero', action='store_true',
 args = parser.parse_args()
 mdsPulseNumber = args.shot
 
+mclient = Mclient(shot=args.shot)
+mclient.getData()
+
 # mdsTreeName = 'rtappisttok'
 mdsTreeName = 'isttokmarte'
 
@@ -82,25 +87,20 @@ start = args.crange[0] - 1
 stop = args.crange[1]
 # for i in range(args.crange[0], args.crange[1]):
 meanD = np.zeros(ADC_CHANNELS, dtype=int)
-driftW = np.zeros(ADC_CHANNELS)
-total_samples = 0
-for i in range(ADC_CHANNELS):
-    dataAdc = client.getData(ADC_RAW.format(i))
-    meanD[i] = np.mean(dataAdc[:, 0]).astype(int)
-    dataAdcInt = client.getData(ADC_INTEG.format(i))
-    total_samples = ADC_DECIM_RATE * len(dataAdcInt[:, 0])
-    driftW[i] = (dataAdcInt[-1, 0] - dataAdcInt[0, 0]) / total_samples
+# driftW = np.zeros(ADC_CHANNELS)
 
 if (args.averages):
+    Eoffset, Woffset = mclient.calcEoWo()
+    nChannels = len(mclient.adcRawData)
     print(f"EO: {ADC_CHANNELS} ", end='')
-    for i in range(ADC_CHANNELS):
-        print(f"{meanD[i]:d} ", end='')
+    for i in range(nChannels):
+        print(f"{Eoffset[i]:d} ", end='')
     print(" ")
     print(f"WO: {ADC_CHANNELS} ", end='')
     for i in range(ADC_CHANNELS):
-        print(f"{driftW[i]:0.3f} ", end='')
+        print(f"{Woffset[i]:0.3f} ", end='')
     print(" ")
-    print(f"Samples {total_samples}, time {total_samples/2e3:.3f} ms")
+    # print(f"Samples {total_samples}, time {total_samples/2e3:.3f} ms")
 
 
 for i in range(start, stop):
@@ -168,6 +168,13 @@ if __name__ == '__main__':
 # vim: syntax=python ts=4 sw=4 sts=4 sr et
 
 """
+total_samples = 0
+for i in range(ADC_CHANNELS):
+    dataAdc = client.getData(ADC_RAW.format(i))
+    meanD[i] = np.mean(dataAdc[:, 0]).astype(int)
+    dataAdcInt = client.getData(ADC_INTEG.format(i))
+    total_samples = ADC_DECIM_RATE * len(dataAdcInt[:, 0])
+    # driftW[i] = (dataAdcInt[-1, 0] - dataAdcInt[0, 0]) / total_samples
 def getMdsData(tree, node):
     try:
         mdsNode = tree.getNode(node)

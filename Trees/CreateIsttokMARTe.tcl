@@ -27,55 +27,55 @@ add node IOP_9/model=ATCA_IOP
 set def \ISTTOKMARTE::TOP.HARDWARE.ATCA_2.IOP_9"
 put RT_DECIM "200"
 put SLOT "9"
-set def \isttokmarte::top.hardware.atca_2.iop_9.channel_0
+set def \ISTTOKMARTE::TOP.HARDWARE.ATCA_2.IOP_9.CHANNEL_0
 # calibration on 14/05/2025
 put gain "1.73887463e-05"
-put inp_decim "gain * adc_decim"
-put inp_integ "gain * adc_integ / \isttokmarte::top.hardware.atca_2.iop_9.rt_decim / \isttokmarte::top.hardware.atca_2.iop_9.clock_freq"
-set def \isttokmarte::top.hardware.atca_2.iop_9.channel_1
+put inp_decim "GAIN * ADC_DECIM"
+put inp_integ "GAIN * ADC_INTEG / \ISTTOKMARTE::TOP.HARDWARE.ATCA_2.IOP_9.RT_DECIM / \ISTTOKMARTE::TOP.HARDWARE.ATCA_2.IOP_9.CLOCK_FREQ"
+set def \ISTTOKMARTE::TOP.HARDWARE.ATCA_2.IOP_9.CHANNEL_1
 put gain "1.73937683e-05"
-put inp_decim "gain * adc_decim"
-put inp_integ "gain * adc_integ / \isttokmarte::top.hardware.atca_2.iop_9.rt_decim / \isttokmarte::top.hardware.atca_2.iop_9.clock_freq"
-set def \isttokmarte::top.hardware.atca_2.iop_9.channel_2
+put inp_decim "GAIN * ADC_DECIM"
+put inp_integ "GAIN * ADC_INTEG / \ISTTOKMARTE::TOP.HARDWARE.ATCA_2.IOP_9.RT_DECIM / \ISTTOKMARTE::TOP.HARDWARE.ATCA_2.IOP_9.CLOCK_FREQ"
+set def \ISTTOKMARTE::TOP.HARDWARE.ATCA_2.IOP_9.CHANNEL_2
 put gain "1.74275762e-05"
-put inp_decim "gain * adc_decim"
-put inp_integ "gain * adc_integ / \isttokmarte::top.hardware.atca_2.iop_9.rt_decim / \isttokmarte::top.hardware.atca_2.iop_9.clock_freq"
-set def \isttokmarte::top.hardware.atca_2.iop_9.channel_3
+put inp_decim "GAIN * ADC_DECIM"
+put inp_integ "GAIN * ADC_INTEG / \ISTTOKMARTE::TOP.HARDWARE.ATCA_2.IOP_9.RT_DECIM / \ISTTOKMARTE::TOP.HARDWARE.ATCA_2.IOP_9.CLOCK_FREQ"
+set def \ISTTOKMARTE::TOP.HARDWARE.ATCA_2.IOP_9.CHANNEL_3
 put gain "1.74994244e-05"
-put inp_decim "gain * adc_decim"
-put inp_integ "gain * adc_integ / \isttokmarte::top.hardware.atca_2.iop_9.rt_decim / \isttokmarte::top.hardware.atca_2.iop_9.clock_freq"
+put inp_decim "GAIN * ADC_DECIM"
+put inp_integ "GAIN * ADC_INTEG / \ISTTOKMARTE::TOP.HARDWARE.ATCA_2.IOP_9.RT_DECIM / \ISTTOKMARTE::TOP.HARDWARE.ATCA_2.IOP_9.CLOCK_FREQ"
 set def \isttokmarte::top.hardware.atca_2.iop_9.channel_4
 put gain "1.73826859e-05"
-put inp_decim "gain * adc_decim"
-put inp_integ "gain * adc_integ / \isttokmarte::top.hardware.atca_2.iop_9.rt_decim / \isttokmarte::top.hardware.atca_2.iop_9.clock_freq"
+put inp_decim "GAIN * ADC_DECIM"
+put inp_integ "GAIN * ADC_INTEG / \ISTTOKMARTE::TOP.HARDWARE.ATCA_2.IOP_9.RT_DECIM / \ISTTOKMARTE::TOP.HARDWARE.ATCA_2.IOP_9.CLOCK_FREQ"
 set def \isttokmarte::top.hardware.atca_2.iop_9.channel_5
 put gain "1.74439575e-05"
-put inp_decim "gain * adc_decim"
-put inp_integ "gain * adc_integ / \isttokmarte::top.hardware.atca_2.iop_9.rt_decim / \isttokmarte::top.hardware.atca_2.iop_9.clock_freq"
+put inp_decim "GAIN * ADC_DECIM"
+put inp_integ "GAIN * ADC_INTEG / \ISTTOKMARTE::TOP.HARDWARE.ATCA_2.IOP_9.RT_DECIM / \ISTTOKMARTE::TOP.HARDWARE.ATCA_2.IOP_9.CLOCK_FREQ"
 set def \isttokmarte::top.hardware.atca_2.iop_9.channel_6
 put gain "1.74532093e-05"
-put inp_decim "gain * adc_decim"
-put inp_integ "gain * adc_integ / \isttokmarte::top.hardware.atca_2.iop_9.rt_decim / \isttokmarte::top.hardware.atca_2.iop_9.clock_freq"
+put inp_decim "GAIN * ADC_DECIM"
+put inp_integ "GAIN * ADC_INTEG / \ISTTOKMARTE::TOP.HARDWARE.ATCA_2.IOP_9.RT_DECIM / \ISTTOKMARTE::TOP.HARDWARE.ATCA_2.IOP_9.CLOCK_FREQ"
 set def \isttokmarte::top.hardware.atca_2.iop_9.channel_7
 put gain "1.73723740e-05"
-put inp_decim "gain * adc_decim"
-put inp_integ "gain * adc_integ / \isttokmarte::top.hardware.atca_2.iop_9.rt_decim / \isttokmarte::top.hardware.atca_2.iop_9.clock_freq"
+put inp_decim "GAIN * ADC_DECIM"
+put inp_integ "GAIN * ADC_INTEG / \ISTTOKMARTE::TOP.HARDWARE.ATCA_2.IOP_9.RT_DECIM / \ISTTOKMARTE::TOP.HARDWARE.ATCA_2.IOP_9.CLOCK_FREQ"
 set def \isttokmarte::top.hardware.atca_2.iop_9.channel_8
 put gain "1.71925327e-05"
-put inp_decim "gain * adc_decim"
-put inp_integ "gain * adc_integ / \isttokmarte::top.hardware.atca_2.iop_9.rt_decim / \isttokmarte::top.hardware.atca_2.iop_9.clock_freq"
+put inp_decim "GAIN * ADC_DECIM"
+put inp_integ "GAIN * ADC_INTEG / \ISTTOKMARTE::TOP.HARDWARE.ATCA_2.IOP_9.RT_DECIM / \ISTTOKMARTE::TOP.HARDWARE.ATCA_2.IOP_9.CLOCK_FREQ"
 set def \isttokmarte::top.hardware.atca_2.iop_9.channel_9
 put gain "1.72739424e-05"
-put inp_decim "gain * adc_decim"
-put inp_integ "gain * adc_integ / \isttokmarte::top.hardware.atca_2.iop_9.rt_decim / \isttokmarte::top.hardware.atca_2.iop_9.clock_freq"
+put inp_decim "GAIN * ADC_DECIM"
+put inp_integ "GAIN * ADC_INTEG / \ISTTOKMARTE::TOP.HARDWARE.ATCA_2.IOP_9.RT_DECIM / \ISTTOKMARTE::TOP.HARDWARE.ATCA_2.IOP_9.CLOCK_FREQ"
 set def \isttokmarte::top.hardware.atca_2.iop_9.channel_10
 put gain "1.73809822e-05"
-put inp_decim "gain * adc_decim"
-put inp_integ "gain * adc_integ / \isttokmarte::top.hardware.atca_2.iop_9.rt_decim / \isttokmarte::top.hardware.atca_2.iop_9.clock_freq"
+put inp_decim "GAIN * ADC_DECIM"
+put inp_integ "GAIN * ADC_INTEG / \ISTTOKMARTE::TOP.HARDWARE.ATCA_2.IOP_9.RT_DECIM / \ISTTOKMARTE::TOP.HARDWARE.ATCA_2.IOP_9.CLOCK_FREQ"
 set def \isttokmarte::top.hardware.atca_2.iop_9.channel_11
 put gain "1.74412886e-05"
-put inp_decim "gain * adc_decim"
-put inp_integ "gain * adc_integ / \isttokmarte::top.hardware.atca_2.iop_9.rt_decim / \isttokmarte::top.hardware.atca_2.iop_9.clock_freq"
+put inp_decim "GAIN * ADC_DECIM"
+put inp_integ "GAIN * ADC_INTEG / \ISTTOKMARTE::TOP.HARDWARE.ATCA_2.IOP_9.RT_DECIM / \ISTTOKMARTE::TOP.HARDWARE.ATCA_2.IOP_9.CLOCK_FREQ"
 
 #set def \ISTTOKMARTE::TOP.INP
 #add node MEAS0/usage=signal
