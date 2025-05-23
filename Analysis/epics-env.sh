@@ -1,0 +1,10 @@
+# Epics stuff
+EPICS_BASE=/opt/epics/epics-base
+EPICS_HOST_ARCH=`${EPICS_BASE}/startup/EpicsHostArch`
+EPICS_BASE_BIN=${EPICS_BASE}/bin/${EPICS_HOST_ARCH}
+export PATH=${EPICS_BASE_BIN}:${PATH}
+
+#export EPICS_CA_ADDR_LIST="10.10.136.177"
+export EPICS_CA_AUTO_ADDR_LIST="NO"
+export EPICS_CA_ADDR_LIST="192.168.1.110"
+
