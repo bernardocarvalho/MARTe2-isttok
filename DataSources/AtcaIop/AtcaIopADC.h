@@ -68,88 +68,57 @@ namespace MARTe {
      * <pre>
      * +AtcaIopADC = {
      *    Class = "AtcaIop::AtcaIopADC"
-      CPUMask = "0x040"
-      StackSize = "1048576"
-      DeviceName = "/dev/atca_v6"
-      BoardId = 9
-      DeviceDmaName = "/dev/atca_v6_dmart_2"
-      NumberOfChannels = "12"
-      IsMaster = "1"
-      SleepNature = "Busy"
-      SleepPercentage = "15"
-      ADCFrequency = "2000000"
-      RTDecimation = "200"
-      ChopperPeriod = "2000"
-      ElectricalOffsets = {"-151" "110" "-417" "-35" "-204" "0" "134" "-59" "-227" "-308" "-120" "-175" "0" "0" "0" "0"}
-      WiringOffsets = {"0.0" "0.0" "0.0" "0.0" "0.0" "0.0" "0.0" "0.0" "0.0" "0.0" "0.0" "0.0" "0.0" "0.0" "0.0" "0.0"}
-      //WiringOffsets = {0.354 0.288 -0.010 -0.083 0.347 0.228 0.088 0.186 -0.297 -0.101 0.025 -0.012 0.0 0.0 0.0 0.0}
-      //WiringOffsets = {"0.271" "0.211" "0.098" "0.141" "0.312" "0.203" "0.212" "0.361" "-0.546" "-0.433" "-0.598" "1.362"}
-      Signals = {
-        Counter = {
-          Type = "uint32"
-        }
-        Time = {
-          Type = "uint32"
-        }
-        TimeoutCount = {
-          Type = "uint32"
-        }
-        TimeoutMax = {
-          Type = "uint32"
-        }
-        ADC0Decim = {
-          Type = "int32"
-        }
-        ADC1Decim = {
-          Type = "int32"
-        }
-
-     *     Class = ADCSimulator
-     *     DeviceName = "/dev/atca_v6" //Mandatory
-     *     BoardId = 0          //   Mandatory
-     *     ChopperPeriod = 2000
-     *     ElectricalOffsets = {1, 10, 20, -30, 1, 1, -10, 10}
-     *     WiringOffsets = {1, 10, 20, -30, 1, 1, -10, 10}
-     *     ADCFrequency = 2000000
-     *     Signals = {
-     *         Counter = {
-     *             Type = uint32
-     *         }
-     *         Time = {
-     *             Type = uint32
-     *             Frequency = 1000
-     *         }
-     *         TimeoutCount = {
-     *             Type = uint32 
-     *         }
-     *         TimeoutMax = {
-     *             Type = uint32
-     *         }
-     *         ADC0 = {
-     *             Type = uint32
-     *         }
-     *         ADC1 = {
-     *             Type = uint32
-     *         }
-     *         ADC2 = {
-     *             Type = uint32
-     *         }
-     *         ADC3 = {
-     *             Type = uint32
-     *         }
-     *         ADC0Decim = {
-     *             Type = uint32
-     *         }
-     *         ADC1Decim = {
-     *             Type = uint32
-     *         }
-     *         ADC2Decim = {
-     *             Type = uint32
-     *         }
-     *         ...
-     *         ADC7Decim = {
-     *             Type = uint32
-     *         }
+     * CPUMask = "0x040"
+     * StackSize = "1048576"
+     * DeviceName = "/dev/atca_v6"
+     * BoardId = 9
+     * DeviceDmaName = "/dev/atca_v6_dmart_2"
+     * NumberOfChannels = "12"
+     * IsMaster = "1"
+     * SleepNature = "Busy"
+     * SleepPercentage = "15"
+     * ADCFrequency = "2000000"
+     * RTDecimation = "200"
+     * ChopperPeriod = "2000"
+     * ElectricalOffsets = {"-151" "110" "-417" "-35" "-204" "0" "134" "-59" "-227" "-308" "-120" "-175" "0" "0" "0" "0"}
+     * WiringOffsets = {"0.0" "0.0" "0.0" "0.0" "0.0" "0.0" "0.0" "0.0" "0.0" "0.0" "0.0" "0.0" "0.0" "0.0" "0.0" "0.0"}
+     * //WiringOffsets = {0.354 0.288 -0.010 -0.083 0.347 0.228 0.088 0.186 -0.297 -0.101 0.025 -0.012 0.0 0.0 0.0 0.0}
+     * //WiringOffsets = {"0.271" "0.211" "0.098" "0.141" "0.312" "0.203" "0.212" "0.361" "-0.546" "-0.433" "-0.598" "1.362"}
+     * Signals = {
+     *   Counter = {
+     *     Type = "uint32"
+     *   }
+     *   Time = {
+     *     Type = "uint32"
+     *   }
+     *   TimeoutCount = {
+     *     Type = "uint32"
+     *   }
+     *   TimeoutMax = {
+     *     Type = "uint32"
+     *   }
+     *   ADCDecim = {
+     *     DataSource = "AtcaIopAdc_DS"
+     *     Type = "int32"
+     *     NumberOfElements = 16
+     *     NumberOfDimensions = 1
+     *   }
+     *   ADCInt = {
+     *     DataSource = "AtcaIopAdc_DS"
+     *     Type = "int64"
+     *     NumberOfElements = 16
+     *     NumberOfDimensions = 1
+     *   }
+     *   Idle_Thread1_CycleTime = {
+     *     DataSource = "Timings"
+     *     Alias = "Idle.Thread1_CycleTime"
+     *     Type = "uint32"
+     *   }
+     *   Run_Thread1_CycleTime = {
+     *     DataSource = "Timings"
+     *     Alias = "Online.Thread1_CycleTime"
+     *     Type = "uint32"
+     *   }
      *     }
      * }
      * </pre>

@@ -666,20 +666,16 @@ ErrorManagement::ErrorType AtcaIopADC::Execute(ExecutionInfo& info) {
 
     //Sleep until the next period. Cannot be < 0 due to while(lastTimeTicks < startTicks) above
     uint64 sleepTicksCorrection = (startTicks - lastTimeTicks);
-    //uint64 deltaTicks = sleepTimeTicks - (startTicks - lastTimeTicks);
     uint64 deltaTicks = sleepTimeTicks - sleepTicksCorrection;
 
     timeoutMax = deltaTicks; // debug
-    //volatile int32 currentDMA = 0u;
     oldestBufferIdx = GetOldestBufferIdx();
     float32 totalSleepTime = static_cast<float32>(static_cast<float64>(deltaTicks) * HighResolutionTimer::Period());
 
     if (sleepNature == Busy) {
         if (sleepPercentage > 0u) {
-            //float32 sleepTime = totalSleepTime * 0.5;
             float32 sleepTime = totalSleepTime * (static_cast<float32>(sleepPercentage) / 100.F);
             Sleep::NoMore(sleepTime);
-            //if(PollDmaBuff(startTicks + deltaTicks + 100000u) < 0)
         }
         if(PollDmaBuff(deltaTicks + POLL_EXTRA_WAIT) < 0){
             //pollTimout++; // TODO check max wait
@@ -702,20 +698,16 @@ ErrorManagement::ErrorType AtcaIopADC::Execute(ExecutionInfo& info) {
 
     ErrorManagement::ErrorType err = synchSem.Post();
     counterAndTimer[0] += nCycles;
-    //counterAndTimer[1] = mappedDmaBase[oldestBufferIdx * RT_PCKT_SIZE] * timerPeriodUsecTime;
     counterAndTimer[1] = pdma[oldestBufferIdx].head_time_cnt * timerPeriodUsecTime;
     // Get adc data from DMA packet
     uint32 k;
     uint32 s;
     for (k=0u; k < ATCA_IOP_N_ADCs ; k++) {
-        //adcValues[k] = (mappedDmaBase[oldestBufferIdx * RT_PCKT_SIZE +
-        //        IOP_ADC_OFFSET + k] ) / (1<<14);
-        adcValues[k] = pdma[oldestBufferIdx].adc_decim_data[k] / (1<<14);
+        //adcValues[k] = pdma[oldestBufferIdx].adc_decim_data[k] / (1<<14);
+        adcValues[k] = pdma[oldestBufferIdx].adc_decim_data[k];
     }
-    //int64 * mappedDmaBase64 = (int64 *) mappedDmaBase;
     for (k=0u; k < ATCA_IOP_N_INTEGRALS ; k++) {
         adcIntegralValues[k] = pdma[oldestBufferIdx].adc_integ_data[k];
-        //mappedDmaBase64[oldestBufferIdx * RT_PCKT64_SIZE + IOP_ADC_INTEG_OFFSET + k];
     }
 
     float64 t = counterAndTimer[1];
