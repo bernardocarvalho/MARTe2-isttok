@@ -3,7 +3,7 @@
 This script get data from the MARTe2 ATCAIop stored in MDSplus
 """
 import numpy as np
-from mdsClient import mdsClient
+import mdsthin
 from mdsthin.exceptions import TreeNNF, TreeFOPENR
 import argparse
 
@@ -13,6 +13,7 @@ ADC_DECIM_RATE = 200  # FPGA decimation
 MDSTREENAME = 'isttokmarte'
 
 MDSPLUS_HOST = "192.168.1.173"
+MDS_URL = "oper@atca-marte2"
 # ADC_CHANNELS = 12  # channels stored in ISTTOK MDS
 ADC_RAW = '\\TOP.HARDWARE.ATCA_2.IOP_9.CHANNEL_{}.ADC_DECIM'
 ADC_RAW_D = '\\TOP.HARDWARE.ATCA_2.IOP_9.CHANNEL_{}.ADC_DECIM_D'
@@ -28,13 +29,14 @@ class ClientMdsThin():
     Models an MDS Thin Client connection to ISTTOK ATCA2 server
     """
 
-    def __init__(self, shot=52737, num_channels=12):
+    def __init__(self, url=MDS_URL, num_channels=12):
         """
         Initializes the connection to the High-Precision-AD-HAT
         """
         try:
-            self.client = mdsClient(MDSPLUS_HOST, user='oper')
-            self.client.openTree(MDSTREENAME, shot)
+            # self.client = mdsClient(MDSPLUS_HOST, user='oper')
+            self.client = mdsthin.Connection('ssh://' + url)
+            #self.client.openTree(MDSTREENAME, shot)
         except TreeFOPENR:
             print(f"Tree {MDSTREENAME} / Shot {shot} Not found")
             raise ValueError
@@ -42,13 +44,24 @@ class ClientMdsThin():
         self.adcRawData = []
         self.adcIntegData = []
 
-    def getData(self):
+    def getTreeData(self, shot=5240):
+        try:
+            self.client.openTree(MDSTREENAME, shot)
+        except TreeFOPENR:
+            print(f"Tree {MDSTREENAME} / Shot {shot} Not found")
+            raise ValueError
         self.adcRawData = []
         self.adcIntegData = []
+        node0 = ADC_RAW.format(0)
+        dim = "dim_of({})".format(node0)
+        self.timeR = self.client.get(dim).data()
+        node0 = ADC_INTEG.format(0)
+        dim = "dim_of({})".format(node0)
+        self.timeI = self.client.get(dim).data()
         for i in range(ADC_CHANNELS):
-            data = self.client.getData(ADC_RAW.format(i))
+            data = self.client.get(ADC_RAW.format(i)).data()
             self.adcRawData.append(data[:, 0])
-            data = self.client.getData(ADC_INTEG.format(i))
+            data = self.client.get(ADC_INTEG.format(i)).data()
             self.adcIntegData.append(data[:, 0])
 
     def calcEoWo(self):
@@ -78,13 +91,16 @@ if __name__ == '__main__':
                         type=int, default=[1, 12])
     parser.add_argument('-s', '--shot',
                         type=int, help='Mds+ pulse Number ([1, ...])',
-                        default=52737)
+                        default=52740)
     # parser.add_argument('-e', '--averages', action='store_true', help='Calc averages')
 # parser.add_argument('-w', '--drift', action='store_true', help='Calc drifts')
 
+    parser.add_argument('-u', '--url',  default=MDS_URL,
+                        help='MDSplus host url')
+
     args = parser.parse_args()
-    clt = ClientMdsThin(shot=args.shot, num_channels=12)
-    #clt.getData()
+    clt = ClientMdsThin(url=args.url, shot=args.shot, num_channels=12)
+    clt.getTreeData()
     # main(args)
 
 
