@@ -7,8 +7,9 @@ import mdsthin
 from mdsthin.exceptions import TreeNNF, TreeFOPENR
 import argparse
 
-ADC_CHANNELS = 14  # channels stored in ISTTOK MDSplus trees
+ADC_CHANNELS = 16  # channels stored in ISTTOK MDSplus trees
 ADC_DECIM_RATE = 200  # FPGA decimation
+ADC_BIT_LSHIFT = 2**14
 
 MDSTREENAME = 'isttokmarte'
 
@@ -29,22 +30,22 @@ class ClientMdsThin():
     Models an MDS Thin Client connection to ISTTOK ATCA2 server
     """
 
-    def __init__(self, url=MDS_URL, num_channels=12):
+    def __init__(self, num_channels=ADC_CHANNELS, url=MDS_URL):
         """
         Initializes the connection to the High-Precision-AD-HAT
         """
         try:
-            # self.client = mdsClient(MDSPLUS_HOST, user='oper')
             self.client = mdsthin.Connection('ssh://' + url)
-            #self.client.openTree(MDSTREENAME, shot)
         except TreeFOPENR:
             print(f"Tree {MDSTREENAME} / Shot {shot} Not found")
             raise ValueError
 
+        self.num_channels = num_channels
         self.adcRawData = []
+        self.choppTrigg = []
         self.adcIntegData = []
 
-    def getTreeData(self, shot=5240):
+    def getTreeData(self, shot=52740):
         try:
             self.client.openTree(MDSTREENAME, shot)
         except TreeFOPENR:
@@ -58,11 +59,18 @@ class ClientMdsThin():
         node0 = ADC_INTEG.format(0)
         dim = "dim_of({})".format(node0)
         self.timeI = self.client.get(dim).data()
-        for i in range(ADC_CHANNELS):
+        for i in range(self.num_channels):
             data = self.client.get(ADC_RAW.format(i)).data()
-            self.adcRawData.append(data[:, 0])
+            adc_raw = data[:, 0].astype(int)
+            adc_raw = adc_raw // ADC_BIT_LSHIFT
+            self.adcRawData.append(adc_raw)
             data = self.client.get(ADC_INTEG.format(i)).data()
             self.adcIntegData.append(data[:, 0])
+        data = self.client.get(ADC_RAW.format(15)).data()
+        adc_bits = data[:, 0].astype(int)
+        adc_bits &= 0x3
+        # breakpoint()
+        self.choppTrigg = adc_bits
 
     def calcEoWo(self):
         if not self.adcRawData:
@@ -71,12 +79,11 @@ class ClientMdsThin():
         print(f"Samples {totalSamples:d}, time {totalSamples/2e3:.3f} ms")
         Eoffset = np.zeros(ADC_CHANNELS, dtype=int)
         Woffset = np.zeros(ADC_CHANNELS)
-        for i in range(ADC_CHANNELS):
+        for i in range(self.num_channels):
             Eoffset[i] = np.mean(self.adcRawData[i]).astype(int)
             intData = self.adcIntegData[i]
             Woffset[i] = (intData[-1] - intData[0]) / totalSamples
         return Eoffset, Woffset
-
 
 
 if __name__ == '__main__':

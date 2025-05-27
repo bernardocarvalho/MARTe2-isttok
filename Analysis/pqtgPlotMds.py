@@ -32,12 +32,16 @@ class MainWindow(QtWidgets.QMainWindow):
 
         parser.add_argument('-s', '--shot', type=int,
                             help='Mds+ pulse Number ([1, ...])', default=100)
+        parser.add_argument('-c', '--crange', nargs='+', type=int,
+                    help='Channel plots (1 16)', default=[1, 12])
+        #parser.add_argument('-n', '--nchannels', type=int,
+        #                    help='Number of channels)', default=ADC_CHANNELS)
         parser.add_argument('-m', '--maxpoints', type=int,
                             help='Max points to plot', default=50000)
         parser.add_argument('-a', '--averages', action='store_true',
                             help='calc Averages')
-        parser.add_argument('-d', '--decimated', action='store_true',
-                            help='Use decimated data')
+        # parser.add_argument('-d', '--decimated', action='store_true',
+        #                     help='Use decimated data')
         # parser.add_argument('-w', '--drift', action='store_true', help='Calc drifts')
         parser.add_argument('-z', '--zero', action='store_true',
                             help='Zero integral Lines')
@@ -47,7 +51,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
         args = parser.parse_args()
         print(f"args.shot {args.shot}")
-        self.mclient = cltMds(url=args.url)
+        self.mclient = cltMds(url=args.url, num_channels=ADC_CHANNELS)
         self.mclient.getTreeData(shot=args.shot)
         # gr_wid = pg.GraphicsLayoutWidget(show=True)
         cw = QtWidgets.QWidget()
@@ -58,48 +62,68 @@ class MainWindow(QtWidgets.QMainWindow):
         pw1 = pg.PlotWidget(name='Plot1')  ## giving the plots names allows us to link their axes
         pw1.addLegend()
         glay.addWidget(pw1, 0, 0)
-        glay.setRowStretch(0, 1)
-        glay.setRowStretch(1, 2)
-
         # self.setCentralWidget(gr_wid)
         self.setCentralWidget(cw)
         self.setWindowTitle('pyqtgraph ISTTOK')
 
         # p1 = gr_wid.addPlot(0,0, 1,1, title="raw data")
+        start_ch = args.crange[0] - 1
+        end_ch = args.crange[1]
+        if (args.averages):
+            Eoffset, Woffset = self.mclient.calcEoWo()
+            # nChannels = len(mclient.adcRawData)
+            print(f"EO: {ADC_CHANNELS} ", end='')
+            for i in range(end_ch):
+                print(f"{Eoffset[i]:d} ", end='')
+            print(" ")
+            print(f"WO: {ADC_CHANNELS} ", end='')
+            for i in range(end_ch):
+                print(f"{Woffset[i]:0.3f} ", end='')
+            print(" ")
         time = self.mclient.timeR
-        for i in range(ADC_CHANNELS):
+        for i in range(start_ch, end_ch):
             dataAdc = self.mclient.adcRawData[i]
-            pw1.plot(dataAdc, pen=pg.mkPen(i, width=1),
+            pw1.plot(dataAdc[:args.maxpoints], pen=pg.mkPen(i, width=1),
                      name="ch {}".format(i))
 
-        pw2 = pg.PlotWidget(name='integ data')  ## giving the plots names allows us to link their axes
+        pw2 = pg.PlotWidget(name='Integ data')
         pw2.addLegend()
+        pw2.setXLink('Plot1')
         glay.addWidget(pw2, 1, 0)
         # piw2 = gr_wid.addPlot(1,0, 1,1, title="integ data")
 
         time = self.mclient.timeI
-        for i in range(ADC_CHANNELS):
+        for i in range(start_ch, end_ch):
+        # for i in range(args.nchannels):
             data = self.mclient.adcIntegData[i]
-            pw2.plot(data, pen=pg.mkPen(i, width=1),
+            if (args.zero):
+                data -= data[0]  # / 2.0e6  # LSB * sec
+            pw2.plot(data[:args.maxpoints], pen=pg.mkPen(i, width=1),
                      name="ch {}".format(i))
+
             #, pen=(255,0,0), name="Red curve")
 
         # sub1 = gr_wid.addLayout(0,2, 1,2)
         # piw2 = gr_wid.addPlot(1,0, 1,1, title="integ data")
 
-        time = self.mclient.timeI
-        for i in range(6):
-            data = self.mclient.adcIntegData[i]
-            pw2.plot(data, pen=pg.mkPen(i, width=1))
+        # time = self.mclient.timeI
+        # for i in range(6):
+        #    data = self.mclient.adcIntegData[i]
+        #    pw2.plot(data, pen=pg.mkPen(i, width=1))
             #, pen=(255,0,0), name="Red curve")
 
         # sub1 = gr_wid.addLayout(0,2, 1,2)
-        self.resize(800, 700)
-        self.show()
-    # SLOT: This has default parameters and can be called without a value
-    def my_custom_fn(self, a="HELLLO!", b=5):
-        print(a, b)
+        pw3 = pg.PlotWidget(name='Chop Trigg')
+        pw3.setXLink('Plot1')
+        data = self.mclient.choppTrigg
+        pw3.plot(data[:args.maxpoints], pen=pg.mkPen(i, width=1))
+        glay.addWidget(pw3, 2, 0)
+        glay.setRowStretch(0, 1)
+        glay.setRowStretch(1, 2)
+        glay.setRowStretch(2, 1)
 
+        self.resize(900, 800)
+        self.show()
 
 mkQApp("ColorBarItem Example")
 main_window = MainWindow()
@@ -120,5 +144,9 @@ if __name__ == '__main__':
         l.addWidget(saveBtn)
         # sub1.addItem(saveBtn)
         glay.addLayout(l, 0, 2)
+    # SLOT: This has default parameters and can be called without a value
+    def my_custom_fn(self, a="HELLLO!", b=5):
+        print(a, b)
+
 
 """
