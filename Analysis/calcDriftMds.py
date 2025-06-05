@@ -1,16 +1,19 @@
 #!/usr/bin/env python3
 """
 This script plots the MARTe2 ATCAIop samples stored in MDSplus
-All of the plots may be panned/scaled by dragging with
-the left/right mouse buttons. Right click on any plot to show a context menu.
 """
-import numpy as np
+# import numpy as np
 
-from MDSplus import Tree
+# from pyqtgraph.Qt import QtWidgets, mkQApp
 import argparse
+from ClientMdsThin import ClientMdsThin as cltMds
+
+ADC_CHANNELS = 16  # channels stored in ISTTOK MDS
+# ADC_BIT_LSHIFT = 2**14
+MDS_URL = "oper@atca-marte2"
 
 ADC_CHANNELS = 14  # channels stored in ISTTOK
-DECIM_RATE = 200
+# DECIM_RATE = 200
 
 MDSTREENAME = 'rtappisttok'
 
@@ -19,13 +22,15 @@ def main(args):
     mdsPulseNumber = args.shot
 
     try:
-        if (mdsPulseNumber > 0):
-            tree = Tree(MDSTREENAME, mdsPulseNumber)
-        else:
-            tree = Tree(MDSTREENAME)
-            mdsPulseNumber = tree.getCurrent()
-            tree.close()
-            tree = Tree(MDSTREENAME, mdsPulseNumber)
+        mclient = cltMds(url=args.url, num_channels=ADC_CHANNELS)
+        mclient.getTreeData(shot=args.shot)
+#        if (mdsPulseNumber > 0):
+#            tree = Tree(MDSTREENAME, mdsPulseNumber)
+#        else:
+#            tree = Tree(MDSTREENAME)
+#            mdsPulseNumber = tree.getCurrent()
+#            tree.close()
+#            tree = Tree(MDSTREENAME, mdsPulseNumber)
 
     except Exception:
         print(f'Failed opening {MDSTREENAME} for pulse number ' +
@@ -33,35 +38,20 @@ def main(args):
         exit()
 
     print(f'Opening {MDSTREENAME} for pulse number {mdsPulseNumber:d}')
-# add plt.addLegend() BEFORE you create the curves.
-# mdsNode = tree.getNode("ATCAIOP1.ADC0RAW")
-# dataAdc = mdsNode.getData().data()
-# timeData = mdsNode.getDimensionAt(0).data()
-    # start = args.crange[0] - 1
-    # top = args.crange[1]
-# for i in range(args.crange[0], args.crange[1]):
-    meanD = np.zeros(ADC_CHANNELS, dtype=int)
-    driftW = np.zeros(ADC_CHANNELS)
-    total_samples = 0
+    Eoffset, Woffset = mclient.calcEoWo()
+    #meanD = np.zeros(ADC_CHANNELS, dtype=int)
+    #driftW = np.zeros(ADC_CHANNELS)
+    # total_samples = 0
+    print(f"caput -a ISTTOK:central:ATCAIOP1-EO {ADC_CHANNELS} ", end='')
     for i in range(ADC_CHANNELS):
-        mdsNode = tree.getNode(f"ATCAIOP1.ADC{i}RAW")
-        dataAdc = mdsNode.getData().data()
-        meanD[i] = np.mean(dataAdc[:, 0]).astype(int)
-        mdsNode = tree.getNode(f"ATCAIOP1.ADC{i}INT")
-        dataAdcInt = mdsNode.getData().data()
-        total_samples = DECIM_RATE * len(dataAdcInt[:, 0])
-        driftW[i] = (dataAdcInt[-1, 0] - dataAdcInt[0, 0]) / total_samples
-
-    # if(args.averages):
-    print(f"EO: {ADC_CHANNELS} ", end='')
-    for i in range(ADC_CHANNELS):
-        print(f"{meanD[i]:d} ", end='')
+        print(f"{Eoffset[i]:d} ", end='')
     print(" ")
-    print(f"WO: {ADC_CHANNELS} ", end='')
+    #print(f"WO: {ADC_CHANNELS} ", end='')
+    print(f"caput -a ISTTOK:central:ATCAIOP1-WO {ADC_CHANNELS} ", end='')
     for i in range(ADC_CHANNELS):
-        print(f"{driftW[i]:0.3f} ", end='')
+        print(f"{Woffset[i]:0.3f} ", end='')
     print(" ")
-    print(f"Samples {total_samples}, time {total_samples/2e3:.2f} ms")
+    # print(f"Samples {total_samples}, time {total_samples/2e3:.2f} ms")
 
 
 if __name__ == '__main__':
@@ -77,6 +67,8 @@ if __name__ == '__main__':
     parser.add_argument('-s', '--shot',
                         type=int, help='Mds+ pulse Number ([1, ...])',
                         default=0)
+    parser.add_argument('-u', '--url',  default=MDS_URL,
+                        help='MDSplus host url')
     # parser.add_argument('-e', '--averages', action='store_true', help='Calc averages')
 # parser.add_argument('-w', '--drift', action='store_true', help='Calc drifts')
 

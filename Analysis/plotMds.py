@@ -38,6 +38,8 @@ class MainWindow(QtWidgets.QMainWindow):
         #                    help='Number of channels)', default=ADC_CHANNELS)
         parser.add_argument('-m', '--maxpoints', type=int,
                             help='Max points to plot', default=50000)
+        parser.add_argument('-y', '--yrange', type=float,
+                            help='Integ Y Range', default=0.0)
         parser.add_argument('-a', '--averages', action='store_true',
                             help='calc Averages')
         # parser.add_argument('-d', '--decimated', action='store_true',
@@ -94,14 +96,16 @@ class MainWindow(QtWidgets.QMainWindow):
 
         time = self.mclient.timeI
         for i in range(start_ch, end_ch):
-        # for i in range(args.nchannels):
             data = self.mclient.adcIntegData[i]
             if (args.zero):
                 data -= data[0]  # / 2.0e6  # LSB * sec
             pw2.plot(data[:args.maxpoints], pen=pg.mkPen(i, width=1),
                      name="ch {}".format(i))
 
-            #, pen=(255,0,0), name="Red curve")
+        ylim = args.yrange
+        if (ylim > 0.0):
+            print(f"Yrange: {ylim}")
+            pw2.setYRange(-ylim, ylim, padding=0)
 
         # sub1 = gr_wid.addLayout(0,2, 1,2)
         # piw2 = gr_wid.addPlot(1,0, 1,1, title="integ data")
@@ -117,6 +121,7 @@ class MainWindow(QtWidgets.QMainWindow):
         pw3.setXLink('Plot1')
         data = self.mclient.choppTrigg
         pw3.plot(data[:args.maxpoints], pen=pg.mkPen(i, width=1))
+        pw3.setYRange(0, 4, padding=0)
         glay.addWidget(pw3, 2, 0)
         glay.setRowStretch(0, 1)
         glay.setRowStretch(1, 2)
