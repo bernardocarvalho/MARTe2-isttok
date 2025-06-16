@@ -69,8 +69,17 @@ class ClientMdsThin():
         data = self.client.get(ADC_RAW.format(15)).data()
         adc_bits = data[:, 0].astype(int)
         adc_bits &= 0x3
+        ch_trg = np.zeros(adc_bits.shape, dtype='int')
+        ch_trg[adc_bits==1] = 2
+        ch_trg[adc_bits==2] = 1
+        ch_trg[adc_bits==3] = 3
         # breakpoint()
-        self.choppTrigg = adc_bits
+        for i, a in enumerate(adc_bits):
+            if a == 1:
+                print(f"found Trigger in {i}")
+            elif a == 3:
+                print(f"found Trigger in {i}")
+        self.choppTrigg = ch_trg
 
     def calcEoWo(self):
         if not self.adcRawData:
