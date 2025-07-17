@@ -1,0 +1,1144 @@
+edit rtappisttok/new
+add node .ATCAIOP1
+add node .INP
+add node .REFS
+add node .ERRORS
+add node .CONTROLS
+add node .STATES
+add node .PERF
+add node TIME/usage=signal
+add node TIMED/usage=signal
+set def \RTAPPISTTOK::TOP.ATCAIOP1
+add node ADC0RAW/usage=signal
+add node ADC0RAWD/usage=signal
+add node ADC1RAW/usage=signal
+add node ADC1RAWD/usage=signal
+add node ADC2RAW/usage=signal
+add node ADC2RAWD/usage=signal
+add node ADC3RAW/usage=signal
+add node ADC3RAWD/usage=signal
+add node ADC4RAW/usage=signal
+add node ADC4RAWD/usage=signal
+add node ADC5RAW/usage=signal
+add node ADC5RAWD/usage=signal
+add node ADC6RAW/usage=signal
+add node ADC6RAWD/usage=signal
+add node ADC7RAW/usage=signal
+add node ADC7RAWD/usage=signal
+add node ADC8RAW/usage=signal
+add node ADC8RAWD/usage=signal
+add node ADC9RAW/usage=signal
+add node ADC9RAWD/usage=signal
+add node ADC10RAW/usage=signal
+add node ADC10RAWD/usage=signal
+add node ADC11RAW/usage=signal
+add node ADC11RAWD/usage=signal
+add node ADC12RAW/usage=signal
+add node ADC12RAWD/usage=signal
+add node ADC13RAW/usage=signal
+add node ADC13RAWD/usage=signal
+add node ADC14RAW/usage=signal
+add node ADC14RAWD/usage=signal
+add node ADC15RAW/usage=signal
+add node ADC15RAWD/usage=signal
+add node ADC0INT/usage=signal
+add node ADC0INTD/usage=signal
+add node ADC1INT/usage=signal
+add node ADC1INTD/usage=signal
+add node ADC2INT/usage=signal
+add node ADC2INTD/usage=signal
+add node ADC3INT/usage=signal
+add node ADC3INTD/usage=signal
+add node ADC4INT/usage=signal
+add node ADC4INTD/usage=signal
+add node ADC5INT/usage=signal
+add node ADC5INTD/usage=signal
+add node ADC6INT/usage=signal
+add node ADC6INTD/usage=signal
+add node ADC7INT/usage=signal
+add node ADC7INTD/usage=signal
+add node ADC8INT/usage=signal
+add node ADC8INTD/usage=signal
+add node ADC9INT/usage=signal
+add node ADC9INTD/usage=signal
+add node ADC10INT/usage=signal
+add node ADC10INTD/usage=signal
+add node ADC11INT/usage=signal
+add node ADC11INTD/usage=signal
+add node ADC12INT/usage=signal
+add node ADC12INTD/usage=signal
+add node ADC13INT/usage=signal
+add node ADC13INTD/usage=signal
+add node ADC14INT/usage=signal
+add node ADC14INTD/usage=signal
+add node ADC15INT/usage=signal
+add node ADC15INTD/usage=signal
+set def \RTAPPISTTOK::TOP.INP
+add node MEAS0D/usage=signal
+add node MEAS0/usage=signal
+add node MEAS0D/usage=signal
+add node MEAS0F/usage=signal
+add node MEAS0FD/usage=signal
+add node MEAS1/usage=signal
+add node MEAS1D/usage=signal
+add node MEAS1F/usage=signal
+add node MEAS1FD/usage=signal
+set def \RTAPPISTTOK::TOP.REFS
+add node REF0/usage=signal
+add node REF0D/usage=signal
+add node REF1/usage=signal
+add node REF1D/usage=signal
+set def \RTAPPISTTOK::TOP.ERRORS
+add node ERROR0/usage=signal
+add node ERROR0D/usage=signal
+add node ERROR1/usage=signal
+add node ERROR1D/usage=signal
+set def \RTAPPISTTOK::TOP.CONTROLS
+add node CONTROL0/usage=signal
+add node CONTROL0D/usage=signal
+add node CONTROL1/usage=signal
+add node CONTROL1D/usage=signal
+set def \RTAPPISTTOK::TOP.STATES
+add node STATE0/usage=signal
+add node STATE0D/usage=signal
+add node STATE1/usage=signal
+add node STATE1D/usage=signal
+add node STATE2/usage=signal
+add node STATE2D/usage=signal
+add node STATE3/usage=signal
+add node STATE3D/usage=signal
+set def \RTAPPISTTOK::TOP.PERF
+add node CYCLET/usage=signal
+add node CYCLETD/usage=signal
+write
+close
+set tree rtappisttok
+create pulse 1
+exit
+edit isttoksdas/new
+add node .INP
+add node .REFS
+add node .ERRORS
+add node .CONTROLS
+add node .STATES
+add node .PERF
+add node TIME/usage=signal
+add node TIMED/usage=signal
+add node .HARDWARE
+set def  .HARDWARE
+add node .ATCA1
+add node .ATCA2
+# set def \ISTTOKSDAS::TOP.HARDWARE.ATCA1
+set def .ATCA1
+add node IOC_0/model=IOCMIMORT
+add node IOC_1/model=IOCMIMORT
+set def \ISTTOKSDAS::TOP.HARDWARE.ATCA1.IOC_1"
+put SLOT "2"
+# put CLOCK_FREQ "20000"
+set def \ISTTOKSDAS::TOP.INP
+add node MEAS0/usage=signal
+add node MEAS0D/usage=signal
+add node MEAS0F/usage=signal
+add node MEAS0FD/usage=signal
+add node MEAS1/usage=signal
+add node MEAS1D/usage=signal
+add node MEAS1F/usage=signal
+add node MEAS1FD/usage=signal
+set def \ISTTOKSDAS::TOP.REFS
+add node REF0/usage=signal
+add node REF0D/usage=signal
+add node REF1/usage=signal
+add node REF1D/usage=signal
+set def \ISTTOKSDAS::TOP.ERRORS
+add node ERROR0/usage=signal
+add node ERROR0D/usage=signal
+add node ERROR1/usage=signal
+add node ERROR1D/usage=signal
+set def \ISTTOKSDAS::TOP.CONTROLS
+add node CONTROL0/usage=signal
+add node CONTROL0D/usage=signal
+add node CONTROL1/usage=signal
+add node CONTROL1D/usage=signal
+set def \ISTTOKSDAS::TOP.STATES
+add node STATE0/usage=signal
+add node STATE0D/usage=signal
+add node STATE1/usage=signal
+add node STATE1D/usage=signal
+add node STATE2/usage=signal
+add node STATE2D/usage=signal
+add node STATE3/usage=signal
+add node STATE3D/usage=signal
+set def \ISTTOKSDAS::TOP.PERF
+add node CYCLET/usage=signal
+add node CYCLETD/usage=signal
+write
+close
+# set tree isttoksdas
+# create pulse 100
+exit
+edit isttoksdas/new
+add node .INP
+add node .REFS
+add node .ERRORS
+add node .CONTROLS
+add node .STATES
+add node .PERF
+add node TIME/usage=signal
+add node TIMED/usage=signal
+add node .HARDWARE
+set def  .HARDWARE
+add node .ATCA1
+add node .ATCA2
+# set def \ISTTOKSDAS::TOP.HARDWARE.ATCA1
+set def .ATCA1
+add node IOC_0/model=IOCMIMORT
+add node IOC_1/model=IOCMIMORT
+set def \ISTTOKSDAS::TOP.HARDWARE.ATCA1.IOC_1"
+put SLOT "2"
+# put CLOCK_FREQ "20000"
+set def \ISTTOKSDAS::TOP.INP
+add node MEAS0/usage=signal
+add node MEAS0D/usage=signal
+add node MEAS0F/usage=signal
+add node MEAS0FD/usage=signal
+add node MEAS1/usage=signal
+add node MEAS1D/usage=signal
+add node MEAS1F/usage=signal
+add node MEAS1FD/usage=signal
+set def \ISTTOKSDAS::TOP.REFS
+add node REF0/usage=signal
+add node REF0D/usage=signal
+add node REF1/usage=signal
+add node REF1D/usage=signal
+set def \ISTTOKSDAS::TOP.ERRORS
+add node ERROR0/usage=signal
+add node ERROR0D/usage=signal
+add node ERROR1/usage=signal
+add node ERROR1D/usage=signal
+set def \ISTTOKSDAS::TOP.CONTROLS
+add node CONTROL0/usage=signal
+add node CONTROL0D/usage=signal
+add node CONTROL1/usage=signal
+add node CONTROL1D/usage=signal
+set def \ISTTOKSDAS::TOP.STATES
+add node STATE0/usage=signal
+add node STATE0D/usage=signal
+add node STATE1/usage=signal
+add node STATE1D/usage=signal
+add node STATE2/usage=signal
+add node STATE2D/usage=signal
+add node STATE3/usage=signal
+add node STATE3D/usage=signal
+set def \ISTTOKSDAS::TOP.PERF
+add node CYCLET/usage=signal
+add node CYCLETD/usage=signal
+write
+close
+# set tree isttoksdas
+# create pulse 100
+exit
+edit isttoksdas/new
+add node .INP
+add node .REFS
+add node .ERRORS
+add node .CONTROLS
+add node .STATES
+add node .PERF
+add node TIME/usage=signal
+add node TIMED/usage=signal
+add node .HARDWARE
+set def  .HARDWARE
+add node .ATCA1
+add node .ATCA2
+# set def \ISTTOKSDAS::TOP.HARDWARE.ATCA1
+set def .ATCA1
+add node IOC_0/model=IOCMIMORT
+add node IOC_1/model=IOCMIMORT
+set def \ISTTOKSDAS::TOP.HARDWARE.ATCA1.IOC_1"
+put SLOT "2"
+# put CLOCK_FREQ "20000"
+set def \ISTTOKSDAS::TOP.INP
+add node MEAS0/usage=signal
+add node MEAS0D/usage=signal
+add node MEAS0F/usage=signal
+add node MEAS0FD/usage=signal
+add node MEAS1/usage=signal
+add node MEAS1D/usage=signal
+add node MEAS1F/usage=signal
+add node MEAS1FD/usage=signal
+set def \ISTTOKSDAS::TOP.REFS
+add node REF0/usage=signal
+add node REF0D/usage=signal
+add node REF1/usage=signal
+add node REF1D/usage=signal
+set def \ISTTOKSDAS::TOP.ERRORS
+add node ERROR0/usage=signal
+add node ERROR0D/usage=signal
+add node ERROR1/usage=signal
+add node ERROR1D/usage=signal
+set def \ISTTOKSDAS::TOP.CONTROLS
+add node CONTROL0/usage=signal
+add node CONTROL0D/usage=signal
+add node CONTROL1/usage=signal
+add node CONTROL1D/usage=signal
+set def \ISTTOKSDAS::TOP.STATES
+add node STATE0/usage=signal
+add node STATE0D/usage=signal
+add node STATE1/usage=signal
+add node STATE1D/usage=signal
+add node STATE2/usage=signal
+add node STATE2D/usage=signal
+add node STATE3/usage=signal
+add node STATE3D/usage=signal
+set def \ISTTOKSDAS::TOP.PERF
+add node CYCLET/usage=signal
+add node CYCLETD/usage=signal
+write
+close
+# set tree isttoksdas
+# create pulse 100
+exit
+set tree isttoksdas
+show nodes
+show sda
+help show
+dir
+set tree isttoksdas
+dir
+set def Hardware
+dir
+set def \top\Hardware
+set def \top:Hardware
+dir
+set def \top:Hardware:ATCA*
+set def \top:Hardware:ATCA1:IOC_0:CHANNEL_0
+set def \top:Hardware:ATCA1:IOC_0
+set def \top:Hardware:ATCA1
+dir
+edit isttokmarte/shot=-1
+set def \ISTTOKMARTE::TOP.HARDWARE.ATCA_2.IOP_9
+help
+help show
+show nodes
+dir
+set def \ISTTOKMARTE::TOP.HARDWARE.ATCA_2.IOP_9.CHANNEL_0
+PUT INP_DECIM "BUILD_SIGNAL(GAIN*ADC_DECIM)"
+PUT INP_DECIM "BUILD_SIGNAL(GAIN*ADC_DECIM), ADC_DECIM, TIMES)"
+PUT INP_DECIM "BUILD_SIGNAL(GAIN*ADC_DECIM, ADC_DECIM, TIMES)"
+PUT INP_DECIM "BUILD_SIGNAL(GAIN*ADC_DECIM, ADC_DECIM, TIME)"
+PUT INP_DECIM "BUILD_SIGNAL(GAIN*ADC_DECIM, ADC_DECIM, ::TIME)"
+PUT INP_DECIM "BUILD_SIGNAL(GAIN*ADC_DECIM, ADC_DECIM, ::TOP.TIME)"
+PUT INP_DECIM "BUILD_SIGNAL(GAIN*ADC_DECIM, ADC_DECIM, TOP.TIME)"
+PUT INP_DECIM "BUILD_SIGNAL(GAIN*ADC_DECIM, ADC_DECIM, \ISTTOKMARTE::TOP.TIME)"
+PUT INP_DECIM "BUILD_SIGNAL(GAIN*ADC_DECIM, ADC_DECIM)"
+PUT INP_DECIM "GAIN * ADC_DECIM"
+get def
+dir
+PUT INP_DECIM "GAIN * ADC_DECIM"
+PUT ADC_DECIM "[1,3,5,4,6,2,8,4,9,0]"
+edit isttokmarte/shot=-1
+set def \ISTTOKMARTE::TOP.HARDWARE.ATCA_2.IOP_9.CHANNEL_0
+PUT ADC_DECIM "[1,3,5,4,6,2,8,4,9,0]"
+PUT INP_DECIM "GAIN * ADC_DECIM"
+PUT INP_DECIM "2 * ADC_DECIM"
+add node inp2
+PUT inp2 "2 * ADC_DECIM"
+PUT inp2 "GAIN * ADC_DECIM"
+show data inp2
+quit
+edit isttokmarte/shot=-1
+set def \ISTTOKMARTE::TOP.HARDWARE.ATCA_2.IOP_9.CHANNEL_0
+add node inp2
+PUT inp2 "GAIN * ADC_DECIM"
+show data inp2
+set def \ISTTOKMARTE::TOP.HARDWARE.ATCA_2.IOP_9.CHANNEL_1
+add node inp2
+PUT inp2 "GAIN * ADC_DECIM"
+show data inp2
+edit isttokmarte/shot=-1
+set def .DIAGNOSTICS.MAGNETICS.MIRNOV
+dir
+set def .DIAGNOSTICS.MAGNETICS.MIRNOV.PROBE1
+dir
+set def PROBE1
+dir
+edit isttokmarte/shot=10
+set def .DIAGNOSTICS.MAGNETICS.MIRNOV.PROBE1
+dir
+show data SIG
+show data POL
+edit isttokmarte/new
+add node .INP
+add node .REFS
+add node .ERRORS
+add node .CONTROLS
+add node .STATES
+add node .PERF
+add node TIME/usage=signal
+add node TIMED/usage=signal
+add node .DIAGNOSTICS
+add node .HARDWARE
+set def  .HARDWARE
+add node .ATCA_1
+add node .ATCA_2
+# set def \ISTTOKSDAS::TOP.HARDWARE.ATCA1
+set def .ATCA_1
+add node IOC_0/model=IOCMIMORT
+add node IOC_1/model=IOCMIMORT
+set def \ISTTOKMARTE::TOP.HARDWARE.ATCA_1.IOC_1"
+put SLOT "2"
+# put CLOCK_FREQ "20000"
+set def \ISTTOKMARTE::TOP.HARDWARE.ATCA_2"
+add node IOP_9/model=ATCA_IOP
+set def \ISTTOKMARTE::TOP.HARDWARE.ATCA_2.IOP_9"
+put RT_DECIM "200"
+put SLOT "9"
+set def \isttokmarte::top.hardware.atca_2.iop_9.channel_0
+# calibration on 14/05/2025
+put gain "1.73887463e-05"
+put inp_decim "gain * adc_decim"
+put inp_integ "gain * adc_integ / \isttokmarte::top.hardware.atca_2.iop_9.rt_decim / \isttokmarte::top.hardware.atca_2.iop_9.clock_freq"
+set def \isttokmarte::top.hardware.atca_2.iop_9.channel_1
+put gain "1.73937683e-05"
+put inp_decim "gain * adc_decim"
+put inp_integ "gain * adc_integ / \isttokmarte::top.hardware.atca_2.iop_9.rt_decim / \isttokmarte::top.hardware.atca_2.iop_9.clock_freq"
+set def \isttokmarte::top.hardware.atca_2.iop_9.channel_2
+put gain "1.74275762e-05"
+put inp_decim "gain * adc_decim"
+put inp_integ "gain * adc_integ / \isttokmarte::top.hardware.atca_2.iop_9.rt_decim / \isttokmarte::top.hardware.atca_2.iop_9.clock_freq"
+set def \isttokmarte::top.hardware.atca_2.iop_9.channel_3
+put gain "1.74994244e-05"
+put inp_decim "gain * adc_decim"
+put inp_integ "gain * adc_integ / \isttokmarte::top.hardware.atca_2.iop_9.rt_decim / \isttokmarte::top.hardware.atca_2.iop_9.clock_freq"
+set def \isttokmarte::top.hardware.atca_2.iop_9.channel_4
+put gain "1.73826859e-05"
+put inp_decim "gain * adc_decim"
+put inp_integ "gain * adc_integ / \isttokmarte::top.hardware.atca_2.iop_9.rt_decim / \isttokmarte::top.hardware.atca_2.iop_9.clock_freq"
+set def \isttokmarte::top.hardware.atca_2.iop_9.channel_5
+put gain "1.74439575e-05"
+put inp_decim "gain * adc_decim"
+put inp_integ "gain * adc_integ / \isttokmarte::top.hardware.atca_2.iop_9.rt_decim / \isttokmarte::top.hardware.atca_2.iop_9.clock_freq"
+set def \isttokmarte::top.hardware.atca_2.iop_9.channel_6
+put gain "1.74532093e-05"
+put inp_decim "gain * adc_decim"
+put inp_integ "gain * adc_integ / \isttokmarte::top.hardware.atca_2.iop_9.rt_decim / \isttokmarte::top.hardware.atca_2.iop_9.clock_freq"
+set def \isttokmarte::top.hardware.atca_2.iop_9.channel_7
+put gain "1.73723740e-05"
+put inp_decim "gain * adc_decim"
+put inp_integ "gain * adc_integ / \isttokmarte::top.hardware.atca_2.iop_9.rt_decim / \isttokmarte::top.hardware.atca_2.iop_9.clock_freq"
+set def \isttokmarte::top.hardware.atca_2.iop_9.channel_8
+put gain "1.71925327e-05"
+put inp_decim "gain * adc_decim"
+put inp_integ "gain * adc_integ / \isttokmarte::top.hardware.atca_2.iop_9.rt_decim / \isttokmarte::top.hardware.atca_2.iop_9.clock_freq"
+set def \isttokmarte::top.hardware.atca_2.iop_9.channel_9
+put gain "1.72739424e-05"
+put inp_decim "gain * adc_decim"
+put inp_integ "gain * adc_integ / \isttokmarte::top.hardware.atca_2.iop_9.rt_decim / \isttokmarte::top.hardware.atca_2.iop_9.clock_freq"
+set def \isttokmarte::top.hardware.atca_2.iop_9.channel_10
+put gain "1.73809822e-05"
+put inp_decim "gain * adc_decim"
+put inp_integ "gain * adc_integ / \isttokmarte::top.hardware.atca_2.iop_9.rt_decim / \isttokmarte::top.hardware.atca_2.iop_9.clock_freq"
+set def \isttokmarte::top.hardware.atca_2.iop_9.channel_11
+put gain "1.74412886e-05"
+put inp_decim "gain * adc_decim"
+put inp_integ "gain * adc_integ / \isttokmarte::top.hardware.atca_2.iop_9.rt_decim / \isttokmarte::top.hardware.atca_2.iop_9.clock_freq"
+#set def \ISTTOKMARTE::TOP.INP
+#add node MEAS0/usage=signal
+#add node MEAS0D/usage=signal
+#add node MEAS0F/usage=signal
+#add node MEAS0FD/usage=signal
+#add node MEAS1/usage=signal
+#add node MEAS1D/usage=signal
+#add node MEAS1F/usage=signal
+#add node MEAS1FD/usage=signal
+set def \ISTTOKMARTE::TOP.REFS
+add node REF0/usage=signal
+add node REF0D/usage=signal
+add node REF1/usage=signal
+add node REF1D/usage=signal
+set def \ISTTOKMARTE::TOP.ERRORS
+add node ERROR0/usage=signal
+add node ERROR0D/usage=signal
+add node ERROR1/usage=signal
+add node ERROR1D/usage=signal
+set def \ISTTOKMARTE::TOP.CONTROLS
+add node CONTROL0/usage=signal
+add node CONTROL0D/usage=signal
+add node CONTROL1/usage=signal
+add node CONTROL1D/usage=signal
+set def \ISTTOKMARTE::TOP.STATES
+add node STATE0/usage=signal
+add node STATE0D/usage=signal
+add node STATE1/usage=signal
+add node STATE1D/usage=signal
+add node STATE2/usage=signal
+add node STATE2D/usage=signal
+add node STATE3/usage=signal
+add node STATE3D/usage=signal
+set def \ISTTOKMARTE::TOP.PERF
+add node CYCLET/usage=signal
+add node CYCLETD/usage=signal
+set def \ISTTOKMARTE::TOP.DIAGNOSTICS
+add node MAGNETICS
+set def .MAGNETICS
+add node .MIRNOV
+set def .MIRNOV
+add node PROBE1
+add node PROBE2
+add node PROBE3
+add node PROBE4
+add node PROBE5
+add node PROBE6
+add node PROBE7
+add node PROBE8
+add node PROBE9
+add node PROBE10
+add node PROBE11
+add node PROBE12
+set def \ISTTOKMARTE::TOP.DIAGNOSTICS.MAGNETICS.MIRNOV.PROBE1
+add node ANGLE/usage=numeric
+put ANGLE "15.1"
+add node AREA/usage=numeric
+# Total area: turns * A : 0.0049**2 * 50
+put AREA "0.00245"
+add node POL/usage=numeric
+put POL "-1"
+add node SIG/usage=signal
+put SIG "POL * \ISTTOKMARTE::TOP.HARDWARE.ATCA_2.IOP_9.CHANNEL_0.INP_INTEG"
+set def \ISTTOKMARTE::TOP.DIAGNOSTICS.MAGNETICS.MIRNOV.PROBE2
+add node ANGLE/usage=numeric
+put ANGLE "30.2"
+add node AREA/usage=numeric
+put AREA "0.00245"
+add node POL/usage=numeric
+put POL "-1"
+add node SIG/usage=signal
+put SIG "POL * \ISTTOKMARTE::TOP.HARDWARE.ATCA_2.IOP_9.CHANNEL_1.INP_INTEG"
+set def \ISTTOKMARTE::TOP.DIAGNOSTICS.MAGNETICS.MIRNOV.PROBE3
+add node ANGLE/usage=numeric
+put ANGLE "30.2"
+add node AREA/usage=numeric
+put AREA "0.00245"
+add node POL/usage=numeric
+put POL "1"
+add node SIG/usage=signal
+put SIG "POL * \ISTTOKMARTE::TOP.HARDWARE.ATCA_2.IOP_9.CHANNEL_2.INP_INTEG"
+set def \ISTTOKMARTE::TOP.DIAGNOSTICS.MAGNETICS.MIRNOV.PROBE4
+add node ANGLE/usage=numeric
+put ANGLE "30.2"
+add node AREA/usage=numeric
+put AREA "0.00245"
+add node POL/usage=numeric
+put POL "-1"
+add node SIG/usage=signal
+put SIG "POL * \ISTTOKMARTE::TOP.HARDWARE.ATCA_2.IOP_9.CHANNEL_3.INP_INTEG"
+set def \ISTTOKMARTE::TOP.DIAGNOSTICS.MAGNETICS.MIRNOV.PROBE5
+add node ANGLE/usage=numeric
+put ANGLE "30.2"
+add node AREA/usage=numeric
+put AREA "0.00245"
+add node POL/usage=numeric
+put POL "1"
+add node SIG/usage=signal
+put SIG "POL * \ISTTOKMARTE::TOP.HARDWARE.ATCA_2.IOP_9.CHANNEL_4.INP_INTEG"
+set def \ISTTOKMARTE::TOP.DIAGNOSTICS.MAGNETICS.MIRNOV.PROBE6
+add node ANGLE/usage=numeric
+put ANGLE "30.2"
+add node AREA/usage=numeric
+put AREA "0.00245"
+add node POL/usage=numeric
+put POL "1"
+add node SIG/usage=signal
+put SIG "POL * \ISTTOKMARTE::TOP.HARDWARE.ATCA_2.IOP_9.CHANNEL_5.INP_INTEG"
+set def \ISTTOKMARTE::TOP.DIAGNOSTICS.MAGNETICS.MIRNOV.PROBE7
+add node ANGLE/usage=numeric
+put ANGLE "30.2"
+add node AREA/usage=numeric
+put AREA "0.00245"
+add node POL/usage=numeric
+put POL "1"
+add node SIG/usage=signal
+put SIG "POL * \ISTTOKMARTE::TOP.HARDWARE.ATCA_2.IOP_9.CHANNEL_6.INP_INTEG"
+set def \ISTTOKMARTE::TOP.DIAGNOSTICS.MAGNETICS.MIRNOV.PROBE8
+add node ANGLE/usage=numeric
+put ANGLE "30.2"
+add node AREA/usage=numeric
+put AREA "0.00245"
+add node POL/usage=numeric
+put POL "1"
+add node SIG/usage=signal
+put SIG "POL * \ISTTOKMARTE::TOP.HARDWARE.ATCA_2.IOP_9.CHANNEL_7.INP_INTEG"
+set def \ISTTOKMARTE::TOP.DIAGNOSTICS.MAGNETICS.MIRNOV.PROBE9
+add node ANGLE/usage=numeric
+put ANGLE "30.2"
+add node AREA/usage=numeric
+put AREA "0.00245"
+add node POL/usage=numeric
+put POL "1"
+add node SIG/usage=signal
+put SIG "POL * \ISTTOKMARTE::TOP.HARDWARE.ATCA_2.IOP_9.CHANNEL_8.INP_INTEG"
+set def \ISTTOKMARTE::TOP.DIAGNOSTICS.MAGNETICS.MIRNOV.PROBE10
+add node ANGLE/usage=numeric
+put ANGLE "30.2"
+add node AREA/usage=numeric
+put AREA "0.00245"
+add node POL/usage=numeric
+put POL "1"
+add node SIG/usage=signal
+put SIG "POL * \ISTTOKMARTE::TOP.HARDWARE.ATCA_2.IOP_9.CHANNEL_9.INP_INTEG"
+set def \ISTTOKMARTE::TOP.DIAGNOSTICS.MAGNETICS.MIRNOV.PROBE11
+add node ANGLE/usage=numeric
+put ANGLE "30.2"
+add node AREA/usage=numeric
+put AREA "0.00245"
+add node POL/usage=numeric
+put POL "-1"
+add node SIG/usage=signal
+put SIG "POL * \ISTTOKMARTE::TOP.HARDWARE.ATCA_2.IOP_9.CHANNEL_10.INP_INTEG"
+set def \ISTTOKMARTE::TOP.DIAGNOSTICS.MAGNETICS.MIRNOV.PROBE12
+add node ANGLE/usage=numeric
+put ANGLE "30.2"
+add node AREA/usage=numeric
+put AREA "0.00245"
+add node POL/usage=numeric
+put POL "1"
+add node SIG/usage=signal
+put SIG "POL * \ISTTOKMARTE::TOP.HARDWARE.ATCA_2.IOP_9.CHANNEL_11.INP_INTEG"
+write
+close
+# set tree isttokmarte
+# create pulse 100
+exit
+edit isttokmarte/new
+add node .INP
+add node .REFS
+add node .ERRORS
+add node .CONTROLS
+add node .STATES
+add node .PERF
+add node TIME/usage=signal
+add node TIMED/usage=signal
+add node .DIAGNOSTICS
+add node .HARDWARE
+set def  .HARDWARE
+add node .ATCA_1
+add node .ATCA_2
+# set def \ISTTOKSDAS::TOP.HARDWARE.ATCA1
+set def .ATCA_1
+add node IOC_0/model=IOCMIMORT
+add node IOC_1/model=IOCMIMORT
+set def \ISTTOKMARTE::TOP.HARDWARE.ATCA_1.IOC_1"
+put SLOT "2"
+# put CLOCK_FREQ "20000"
+set def \ISTTOKMARTE::TOP.HARDWARE.ATCA_2"
+add node IOP_9/model=ATCA_IOP
+set def \ISTTOKMARTE::TOP.HARDWARE.ATCA_2.IOP_9"
+put RT_DECIM "200"
+put SLOT "9"
+set def \isttokmarte::top.hardware.atca_2.iop_9.channel_0
+# calibration on 14/05/2025
+put gain "1.73887463e-05"
+put inp_decim "gain * adc_decim"
+put inp_integ "gain * adc_integ / \isttokmarte::top.hardware.atca_2.iop_9.rt_decim / \isttokmarte::top.hardware.atca_2.iop_9.clock_freq"
+set def \isttokmarte::top.hardware.atca_2.iop_9.channel_1
+put gain "1.73937683e-05"
+put inp_decim "gain * adc_decim"
+put inp_integ "gain * adc_integ / \isttokmarte::top.hardware.atca_2.iop_9.rt_decim / \isttokmarte::top.hardware.atca_2.iop_9.clock_freq"
+set def \isttokmarte::top.hardware.atca_2.iop_9.channel_2
+put gain "1.74275762e-05"
+put inp_decim "gain * adc_decim"
+put inp_integ "gain * adc_integ / \isttokmarte::top.hardware.atca_2.iop_9.rt_decim / \isttokmarte::top.hardware.atca_2.iop_9.clock_freq"
+set def \isttokmarte::top.hardware.atca_2.iop_9.channel_3
+put gain "1.74994244e-05"
+put inp_decim "gain * adc_decim"
+put inp_integ "gain * adc_integ / \isttokmarte::top.hardware.atca_2.iop_9.rt_decim / \isttokmarte::top.hardware.atca_2.iop_9.clock_freq"
+set def \isttokmarte::top.hardware.atca_2.iop_9.channel_4
+put gain "1.73826859e-05"
+put inp_decim "gain * adc_decim"
+put inp_integ "gain * adc_integ / \isttokmarte::top.hardware.atca_2.iop_9.rt_decim / \isttokmarte::top.hardware.atca_2.iop_9.clock_freq"
+set def \isttokmarte::top.hardware.atca_2.iop_9.channel_5
+put gain "1.74439575e-05"
+put inp_decim "gain * adc_decim"
+put inp_integ "gain * adc_integ / \isttokmarte::top.hardware.atca_2.iop_9.rt_decim / \isttokmarte::top.hardware.atca_2.iop_9.clock_freq"
+set def \isttokmarte::top.hardware.atca_2.iop_9.channel_6
+put gain "1.74532093e-05"
+put inp_decim "gain * adc_decim"
+put inp_integ "gain * adc_integ / \isttokmarte::top.hardware.atca_2.iop_9.rt_decim / \isttokmarte::top.hardware.atca_2.iop_9.clock_freq"
+set def \isttokmarte::top.hardware.atca_2.iop_9.channel_7
+put gain "1.73723740e-05"
+put inp_decim "gain * adc_decim"
+put inp_integ "gain * adc_integ / \isttokmarte::top.hardware.atca_2.iop_9.rt_decim / \isttokmarte::top.hardware.atca_2.iop_9.clock_freq"
+set def \isttokmarte::top.hardware.atca_2.iop_9.channel_8
+put gain "1.71925327e-05"
+put inp_decim "gain * adc_decim"
+put inp_integ "gain * adc_integ / \isttokmarte::top.hardware.atca_2.iop_9.rt_decim / \isttokmarte::top.hardware.atca_2.iop_9.clock_freq"
+set def \isttokmarte::top.hardware.atca_2.iop_9.channel_9
+put gain "1.72739424e-05"
+put inp_decim "gain * adc_decim"
+put inp_integ "gain * adc_integ / \isttokmarte::top.hardware.atca_2.iop_9.rt_decim / \isttokmarte::top.hardware.atca_2.iop_9.clock_freq"
+set def \isttokmarte::top.hardware.atca_2.iop_9.channel_10
+put gain "1.73809822e-05"
+put inp_decim "gain * adc_decim"
+put inp_integ "gain * adc_integ / \isttokmarte::top.hardware.atca_2.iop_9.rt_decim / \isttokmarte::top.hardware.atca_2.iop_9.clock_freq"
+set def \isttokmarte::top.hardware.atca_2.iop_9.channel_11
+put gain "1.74412886e-05"
+put inp_decim "gain * adc_decim"
+put inp_integ "gain * adc_integ / \isttokmarte::top.hardware.atca_2.iop_9.rt_decim / \isttokmarte::top.hardware.atca_2.iop_9.clock_freq"
+#set def \ISTTOKMARTE::TOP.INP
+#add node MEAS0/usage=signal
+#add node MEAS0D/usage=signal
+#add node MEAS0F/usage=signal
+#add node MEAS0FD/usage=signal
+#add node MEAS1/usage=signal
+#add node MEAS1D/usage=signal
+#add node MEAS1F/usage=signal
+#add node MEAS1FD/usage=signal
+set def \ISTTOKMARTE::TOP.REFS
+add node REF0/usage=signal
+add node REF0D/usage=signal
+add node REF1/usage=signal
+add node REF1D/usage=signal
+set def \ISTTOKMARTE::TOP.ERRORS
+add node ERROR0/usage=signal
+add node ERROR0D/usage=signal
+add node ERROR1/usage=signal
+add node ERROR1D/usage=signal
+set def \ISTTOKMARTE::TOP.CONTROLS
+add node CONTROL0/usage=signal
+add node CONTROL0D/usage=signal
+add node CONTROL1/usage=signal
+add node CONTROL1D/usage=signal
+set def \ISTTOKMARTE::TOP.STATES
+add node STATE0/usage=signal
+add node STATE0D/usage=signal
+add node STATE1/usage=signal
+add node STATE1D/usage=signal
+add node STATE2/usage=signal
+add node STATE2D/usage=signal
+add node STATE3/usage=signal
+add node STATE3D/usage=signal
+set def \ISTTOKMARTE::TOP.PERF
+add node CYCLET/usage=signal
+add node CYCLETD/usage=signal
+set def \ISTTOKMARTE::TOP.DIAGNOSTICS
+add node MAGNETICS
+set def .MAGNETICS
+add node .MIRNOV
+set def .MIRNOV
+add node PROBE1
+add node PROBE2
+add node PROBE3
+add node PROBE4
+add node PROBE5
+add node PROBE6
+add node PROBE7
+add node PROBE8
+add node PROBE9
+add node PROBE10
+add node PROBE11
+add node PROBE12
+set def \ISTTOKMARTE::TOP.DIAGNOSTICS.MAGNETICS.MIRNOV.PROBE1
+add node ANGLE/usage=numeric
+put ANGLE "15.1"
+add node AREA/usage=numeric
+# Total area: turns * A : 0.0049**2 * 50
+put AREA "0.00245"
+add node POL/usage=numeric
+put POL "-1"
+add node SIG/usage=signal
+put SIG "POL * \ISTTOKMARTE::TOP.HARDWARE.ATCA_2.IOP_9.CHANNEL_0.INP_INTEG"
+set def \ISTTOKMARTE::TOP.DIAGNOSTICS.MAGNETICS.MIRNOV.PROBE2
+add node ANGLE/usage=numeric
+put ANGLE "30.2"
+add node AREA/usage=numeric
+put AREA "0.00245"
+add node POL/usage=numeric
+put POL "-1"
+add node SIG/usage=signal
+put SIG "POL * \ISTTOKMARTE::TOP.HARDWARE.ATCA_2.IOP_9.CHANNEL_1.INP_INTEG"
+set def \ISTTOKMARTE::TOP.DIAGNOSTICS.MAGNETICS.MIRNOV.PROBE3
+add node ANGLE/usage=numeric
+put ANGLE "30.2"
+add node AREA/usage=numeric
+put AREA "0.00245"
+add node POL/usage=numeric
+put POL "1"
+add node SIG/usage=signal
+put SIG "POL * \ISTTOKMARTE::TOP.HARDWARE.ATCA_2.IOP_9.CHANNEL_2.INP_INTEG"
+set def \ISTTOKMARTE::TOP.DIAGNOSTICS.MAGNETICS.MIRNOV.PROBE4
+add node ANGLE/usage=numeric
+put ANGLE "30.2"
+add node AREA/usage=numeric
+put AREA "0.00245"
+add node POL/usage=numeric
+put POL "-1"
+add node SIG/usage=signal
+put SIG "POL * \ISTTOKMARTE::TOP.HARDWARE.ATCA_2.IOP_9.CHANNEL_3.INP_INTEG"
+set def \ISTTOKMARTE::TOP.DIAGNOSTICS.MAGNETICS.MIRNOV.PROBE5
+add node ANGLE/usage=numeric
+put ANGLE "30.2"
+add node AREA/usage=numeric
+put AREA "0.00245"
+add node POL/usage=numeric
+put POL "1"
+add node SIG/usage=signal
+put SIG "POL * \ISTTOKMARTE::TOP.HARDWARE.ATCA_2.IOP_9.CHANNEL_4.INP_INTEG"
+set def \ISTTOKMARTE::TOP.DIAGNOSTICS.MAGNETICS.MIRNOV.PROBE6
+add node ANGLE/usage=numeric
+put ANGLE "30.2"
+add node AREA/usage=numeric
+put AREA "0.00245"
+add node POL/usage=numeric
+put POL "1"
+add node SIG/usage=signal
+put SIG "POL * \ISTTOKMARTE::TOP.HARDWARE.ATCA_2.IOP_9.CHANNEL_5.INP_INTEG"
+set def \ISTTOKMARTE::TOP.DIAGNOSTICS.MAGNETICS.MIRNOV.PROBE7
+add node ANGLE/usage=numeric
+put ANGLE "30.2"
+add node AREA/usage=numeric
+put AREA "0.00245"
+add node POL/usage=numeric
+put POL "1"
+add node SIG/usage=signal
+put SIG "POL * \ISTTOKMARTE::TOP.HARDWARE.ATCA_2.IOP_9.CHANNEL_6.INP_INTEG"
+set def \ISTTOKMARTE::TOP.DIAGNOSTICS.MAGNETICS.MIRNOV.PROBE8
+add node ANGLE/usage=numeric
+put ANGLE "30.2"
+add node AREA/usage=numeric
+put AREA "0.00245"
+add node POL/usage=numeric
+put POL "1"
+add node SIG/usage=signal
+put SIG "POL * \ISTTOKMARTE::TOP.HARDWARE.ATCA_2.IOP_9.CHANNEL_7.INP_INTEG"
+set def \ISTTOKMARTE::TOP.DIAGNOSTICS.MAGNETICS.MIRNOV.PROBE9
+add node ANGLE/usage=numeric
+put ANGLE "30.2"
+add node AREA/usage=numeric
+put AREA "0.00245"
+add node POL/usage=numeric
+put POL "1"
+add node SIG/usage=signal
+put SIG "POL * \ISTTOKMARTE::TOP.HARDWARE.ATCA_2.IOP_9.CHANNEL_8.INP_INTEG"
+set def \ISTTOKMARTE::TOP.DIAGNOSTICS.MAGNETICS.MIRNOV.PROBE10
+add node ANGLE/usage=numeric
+put ANGLE "30.2"
+add node AREA/usage=numeric
+put AREA "0.00245"
+add node POL/usage=numeric
+put POL "1"
+add node SIG/usage=signal
+put SIG "POL * \ISTTOKMARTE::TOP.HARDWARE.ATCA_2.IOP_9.CHANNEL_9.INP_INTEG"
+set def \ISTTOKMARTE::TOP.DIAGNOSTICS.MAGNETICS.MIRNOV.PROBE11
+add node ANGLE/usage=numeric
+put ANGLE "30.2"
+add node AREA/usage=numeric
+put AREA "0.00245"
+add node POL/usage=numeric
+put POL "-1"
+add node SIG/usage=signal
+put SIG "POL * \ISTTOKMARTE::TOP.HARDWARE.ATCA_2.IOP_9.CHANNEL_10.INP_INTEG"
+set def \ISTTOKMARTE::TOP.DIAGNOSTICS.MAGNETICS.MIRNOV.PROBE12
+add node ANGLE/usage=numeric
+put ANGLE "30.2"
+add node AREA/usage=numeric
+put AREA "0.00245"
+add node POL/usage=numeric
+put POL "1"
+add node SIG/usage=signal
+put SIG "POL * \ISTTOKMARTE::TOP.HARDWARE.ATCA_2.IOP_9.CHANNEL_11.INP_INTEG"
+write
+close
+# set tree isttokmarte
+# create pulse 100
+exit
+edit isttokmarte/new
+add node .INP
+add node .REFS
+add node .ERRORS
+add node .CONTROLS
+add node .STATES
+add node .PERF
+add node TIME/usage=signal
+add node TIMED/usage=signal
+add node .DIAGNOSTICS
+add node .HARDWARE
+set def  .HARDWARE
+add node .ATCA_1
+add node .ATCA_2
+# set def \ISTTOKSDAS::TOP.HARDWARE.ATCA1
+set def .ATCA_1
+add node IOC_0/model=IOCMIMORT
+add node IOC_1/model=IOCMIMORT
+set def \ISTTOKMARTE::TOP.HARDWARE.ATCA_1.IOC_1"
+put SLOT "2"
+# put CLOCK_FREQ "20000"
+set def \ISTTOKMARTE::TOP.HARDWARE.ATCA_2"
+add node IOP_9/model=ATCA_IOP
+set def \ISTTOKMARTE::TOP.HARDWARE.ATCA_2.IOP_9"
+put RT_DECIM "200"
+put SLOT "9"
+set def \isttokmarte::top.hardware.atca_2.iop_9.channel_0
+# calibration on 14/05/2025
+put gain "1.73887463e-05"
+put inp_decim "gain * adc_decim"
+put inp_integ "gain * adc_integ / \isttokmarte::top.hardware.atca_2.iop_9.rt_decim / \isttokmarte::top.hardware.atca_2.iop_9.clock_freq"
+set def \isttokmarte::top.hardware.atca_2.iop_9.channel_1
+put gain "1.73937683e-05"
+put inp_decim "gain * adc_decim"
+put inp_integ "gain * adc_integ / \isttokmarte::top.hardware.atca_2.iop_9.rt_decim / \isttokmarte::top.hardware.atca_2.iop_9.clock_freq"
+set def \isttokmarte::top.hardware.atca_2.iop_9.channel_2
+put gain "1.74275762e-05"
+put inp_decim "gain * adc_decim"
+put inp_integ "gain * adc_integ / \isttokmarte::top.hardware.atca_2.iop_9.rt_decim / \isttokmarte::top.hardware.atca_2.iop_9.clock_freq"
+set def \isttokmarte::top.hardware.atca_2.iop_9.channel_3
+put gain "1.74994244e-05"
+put inp_decim "gain * adc_decim"
+put inp_integ "gain * adc_integ / \isttokmarte::top.hardware.atca_2.iop_9.rt_decim / \isttokmarte::top.hardware.atca_2.iop_9.clock_freq"
+set def \isttokmarte::top.hardware.atca_2.iop_9.channel_4
+put gain "1.73826859e-05"
+put inp_decim "gain * adc_decim"
+put inp_integ "gain * adc_integ / \isttokmarte::top.hardware.atca_2.iop_9.rt_decim / \isttokmarte::top.hardware.atca_2.iop_9.clock_freq"
+set def \isttokmarte::top.hardware.atca_2.iop_9.channel_5
+put gain "1.74439575e-05"
+put inp_decim "gain * adc_decim"
+put inp_integ "gain * adc_integ / \isttokmarte::top.hardware.atca_2.iop_9.rt_decim / \isttokmarte::top.hardware.atca_2.iop_9.clock_freq"
+set def \isttokmarte::top.hardware.atca_2.iop_9.channel_6
+put gain "1.74532093e-05"
+put inp_decim "gain * adc_decim"
+put inp_integ "gain * adc_integ / \isttokmarte::top.hardware.atca_2.iop_9.rt_decim / \isttokmarte::top.hardware.atca_2.iop_9.clock_freq"
+set def \isttokmarte::top.hardware.atca_2.iop_9.channel_7
+put gain "1.73723740e-05"
+put inp_decim "gain * adc_decim"
+put inp_integ "gain * adc_integ / \isttokmarte::top.hardware.atca_2.iop_9.rt_decim / \isttokmarte::top.hardware.atca_2.iop_9.clock_freq"
+set def \isttokmarte::top.hardware.atca_2.iop_9.channel_8
+put gain "1.71925327e-05"
+put inp_decim "gain * adc_decim"
+put inp_integ "gain * adc_integ / \isttokmarte::top.hardware.atca_2.iop_9.rt_decim / \isttokmarte::top.hardware.atca_2.iop_9.clock_freq"
+set def \isttokmarte::top.hardware.atca_2.iop_9.channel_9
+put gain "1.72739424e-05"
+put inp_decim "gain * adc_decim"
+put inp_integ "gain * adc_integ / \isttokmarte::top.hardware.atca_2.iop_9.rt_decim / \isttokmarte::top.hardware.atca_2.iop_9.clock_freq"
+set def \isttokmarte::top.hardware.atca_2.iop_9.channel_10
+put gain "1.73809822e-05"
+put inp_decim "gain * adc_decim"
+put inp_integ "gain * adc_integ / \isttokmarte::top.hardware.atca_2.iop_9.rt_decim / \isttokmarte::top.hardware.atca_2.iop_9.clock_freq"
+set def \isttokmarte::top.hardware.atca_2.iop_9.channel_11
+put gain "1.74412886e-05"
+put inp_decim "gain * adc_decim"
+put inp_integ "gain * adc_integ / \isttokmarte::top.hardware.atca_2.iop_9.rt_decim / \isttokmarte::top.hardware.atca_2.iop_9.clock_freq"
+#set def \ISTTOKMARTE::TOP.INP
+#add node MEAS0/usage=signal
+#add node MEAS0D/usage=signal
+#add node MEAS0F/usage=signal
+#add node MEAS0FD/usage=signal
+#add node MEAS1/usage=signal
+#add node MEAS1D/usage=signal
+#add node MEAS1F/usage=signal
+#add node MEAS1FD/usage=signal
+set def \ISTTOKMARTE::TOP.REFS
+add node REF0/usage=signal
+add node REF0D/usage=signal
+add node REF1/usage=signal
+add node REF1D/usage=signal
+set def \ISTTOKMARTE::TOP.ERRORS
+add node ERROR0/usage=signal
+add node ERROR0D/usage=signal
+add node ERROR1/usage=signal
+add node ERROR1D/usage=signal
+set def \ISTTOKMARTE::TOP.CONTROLS
+add node CONTROL0/usage=signal
+add node CONTROL0D/usage=signal
+add node CONTROL1/usage=signal
+add node CONTROL1D/usage=signal
+set def \ISTTOKMARTE::TOP.STATES
+add node STATE0/usage=signal
+add node STATE0D/usage=signal
+add node STATE1/usage=signal
+add node STATE1D/usage=signal
+add node STATE2/usage=signal
+add node STATE2D/usage=signal
+add node STATE3/usage=signal
+add node STATE3D/usage=signal
+set def \ISTTOKMARTE::TOP.PERF
+add node CYCLET/usage=signal
+add node CYCLETD/usage=signal
+set def \ISTTOKMARTE::TOP.DIAGNOSTICS
+add node MAGNETICS
+set def .MAGNETICS
+add node .MIRNOV
+set def .MIRNOV
+add node PROBE1
+add node PROBE2
+add node PROBE3
+add node PROBE4
+add node PROBE5
+add node PROBE6
+add node PROBE7
+add node PROBE8
+add node PROBE9
+add node PROBE10
+add node PROBE11
+add node PROBE12
+set def \ISTTOKMARTE::TOP.DIAGNOSTICS.MAGNETICS.MIRNOV.PROBE1
+add node ANGLE/usage=numeric
+put ANGLE "15.1"
+add node AREA/usage=numeric
+# Total area: turns * A : 0.0049**2 * 50
+put AREA "0.0012005"
+add node POL/usage=numeric
+put POL "-1"
+add node SIG/usage=signal
+put SIG "POL * \ISTTOKMARTE::TOP.HARDWARE.ATCA_2.IOP_9.CHANNEL_0.INP_INTEG"
+set def \ISTTOKMARTE::TOP.DIAGNOSTICS.MAGNETICS.MIRNOV.PROBE2
+add node ANGLE/usage=numeric
+put ANGLE "30.2"
+add node AREA/usage=numeric
+put AREA "0.0012005"
+add node POL/usage=numeric
+put POL "-1"
+add node SIG/usage=signal
+put SIG "POL * \ISTTOKMARTE::TOP.HARDWARE.ATCA_2.IOP_9.CHANNEL_1.INP_INTEG"
+set def \ISTTOKMARTE::TOP.DIAGNOSTICS.MAGNETICS.MIRNOV.PROBE3
+add node ANGLE/usage=numeric
+put ANGLE "30.2"
+add node AREA/usage=numeric
+put AREA "0.0012005"
+add node POL/usage=numeric
+put POL "1"
+add node SIG/usage=signal
+put SIG "POL * \ISTTOKMARTE::TOP.HARDWARE.ATCA_2.IOP_9.CHANNEL_2.INP_INTEG"
+set def \ISTTOKMARTE::TOP.DIAGNOSTICS.MAGNETICS.MIRNOV.PROBE4
+add node ANGLE/usage=numeric
+put ANGLE "30.2"
+add node AREA/usage=numeric
+put AREA "0.0012005"
+add node POL/usage=numeric
+put POL "-1"
+add node SIG/usage=signal
+put SIG "POL * \ISTTOKMARTE::TOP.HARDWARE.ATCA_2.IOP_9.CHANNEL_3.INP_INTEG"
+set def \ISTTOKMARTE::TOP.DIAGNOSTICS.MAGNETICS.MIRNOV.PROBE5
+add node ANGLE/usage=numeric
+put ANGLE "30.2"
+add node AREA/usage=numeric
+put AREA "0.0012005"
+add node POL/usage=numeric
+put POL "1"
+add node SIG/usage=signal
+put SIG "POL * \ISTTOKMARTE::TOP.HARDWARE.ATCA_2.IOP_9.CHANNEL_4.INP_INTEG"
+set def \ISTTOKMARTE::TOP.DIAGNOSTICS.MAGNETICS.MIRNOV.PROBE6
+add node ANGLE/usage=numeric
+put ANGLE "30.2"
+add node AREA/usage=numeric
+put AREA "0.0012005"
+add node POL/usage=numeric
+put POL "1"
+add node SIG/usage=signal
+put SIG "POL * \ISTTOKMARTE::TOP.HARDWARE.ATCA_2.IOP_9.CHANNEL_5.INP_INTEG"
+set def \ISTTOKMARTE::TOP.DIAGNOSTICS.MAGNETICS.MIRNOV.PROBE7
+add node ANGLE/usage=numeric
+put ANGLE "30.2"
+add node AREA/usage=numeric
+put AREA "0.0012005"
+add node POL/usage=numeric
+put POL "1"
+add node SIG/usage=signal
+put SIG "POL * \ISTTOKMARTE::TOP.HARDWARE.ATCA_2.IOP_9.CHANNEL_6.INP_INTEG"
+set def \ISTTOKMARTE::TOP.DIAGNOSTICS.MAGNETICS.MIRNOV.PROBE8
+add node ANGLE/usage=numeric
+put ANGLE "30.2"
+add node AREA/usage=numeric
+put AREA "0.0012005"
+add node POL/usage=numeric
+put POL "1"
+add node SIG/usage=signal
+put SIG "POL * \ISTTOKMARTE::TOP.HARDWARE.ATCA_2.IOP_9.CHANNEL_7.INP_INTEG"
+set def \ISTTOKMARTE::TOP.DIAGNOSTICS.MAGNETICS.MIRNOV.PROBE9
+add node ANGLE/usage=numeric
+put ANGLE "30.2"
+add node AREA/usage=numeric
+put AREA "0.0012005"
+add node POL/usage=numeric
+put POL "1"
+add node SIG/usage=signal
+put SIG "POL * \ISTTOKMARTE::TOP.HARDWARE.ATCA_2.IOP_9.CHANNEL_8.INP_INTEG"
+set def \ISTTOKMARTE::TOP.DIAGNOSTICS.MAGNETICS.MIRNOV.PROBE10
+add node ANGLE/usage=numeric
+put ANGLE "30.2"
+add node AREA/usage=numeric
+put AREA "0.0012005"
+add node POL/usage=numeric
+put POL "1"
+add node SIG/usage=signal
+put SIG "POL * \ISTTOKMARTE::TOP.HARDWARE.ATCA_2.IOP_9.CHANNEL_9.INP_INTEG"
+set def \ISTTOKMARTE::TOP.DIAGNOSTICS.MAGNETICS.MIRNOV.PROBE11
+add node ANGLE/usage=numeric
+put ANGLE "30.2"
+add node AREA/usage=numeric
+put AREA "0.0012005"
+add node POL/usage=numeric
+put POL "-1"
+add node SIG/usage=signal
+put SIG "POL * \ISTTOKMARTE::TOP.HARDWARE.ATCA_2.IOP_9.CHANNEL_10.INP_INTEG"
+set def \ISTTOKMARTE::TOP.DIAGNOSTICS.MAGNETICS.MIRNOV.PROBE12
+add node ANGLE/usage=numeric
+put ANGLE "30.2"
+add node AREA/usage=numeric
+put AREA "0.0012005"
+add node POL/usage=numeric
+put POL "1"
+add node SIG/usage=signal
+put SIG "POL * \ISTTOKMARTE::TOP.HARDWARE.ATCA_2.IOP_9.CHANNEL_11.INP_INTEG"
+
+add node REST/usage=signal
+dir
+add node Zest/usage=signal
+add node IPest/usage=signal
+dir
+write
+set def \isttokmarte::TOP.controls
+dir
+add node .MATLAB
+set def \isttokmarte::TOP.controls.matlab
+dir
+add node RControl/usage=signal
+add node ZControl/usage=signal
+write
+set def \ISTTOKMARTE::TOP.DIAGNOSTICS.MAGNETICS.MIRNOV.PROBE1
+dir
+put SIG "POL/AREA * \ISTTOKMARTE::TOP.HARDWARE.ATCA_2.IOP_9.CHANNEL_0.INP_INTEG"
+dir
+show sig
+write
+set def \ISTTOKMARTE::TOP.DIAGNOSTICS.MAGNETICS.MIRNOV.PROBE2
+put SIG "POL/AREA * \ISTTOKMARTE::TOP.HARDWARE.ATCA_2.IOP_9.CHANNEL_1.INP_INTEG"
+set def \ISTTOKMARTE::TOP.DIAGNOSTICS.MAGNETICS.MIRNOV.PROBE3
+put SIG "POL/AREA * \ISTTOKMARTE::TOP.HARDWARE.ATCA_2.IOP_9.CHANNEL_2.INP_INTEG"
+set def \ISTTOKMARTE::TOP.DIAGNOSTICS.MAGNETICS.MIRNOV.PROBE4
+put SIG "POL/AREA * \ISTTOKMARTE::TOP.HARDWARE.ATCA_2.IOP_9.CHANNEL_3.INP_INTEG"
+set def \ISTTOKMARTE::TOP.DIAGNOSTICS.MAGNETICS.MIRNOV.PROBE5
+put SIG "POL/AREA * \ISTTOKMARTE::TOP.HARDWARE.ATCA_2.IOP_9.CHANNEL_4.INP_INTEG"
+set def \ISTTOKMARTE::TOP.DIAGNOSTICS.MAGNETICS.MIRNOV.PROBE6
+put SIG "POL/AREA * \ISTTOKMARTE::TOP.HARDWARE.ATCA_2.IOP_9.CHANNEL_5.INP_INTEG"
+set def \ISTTOKMARTE::TOP.DIAGNOSTICS.MAGNETICS.MIRNOV.PROBE7
+put SIG "POL/AREA * \ISTTOKMARTE::TOP.HARDWARE.ATCA_2.IOP_9.CHANNEL_6.INP_INTEG"
+set def \ISTTOKMARTE::TOP.DIAGNOSTICS.MAGNETICS.MIRNOV.PROBE8
+put SIG "POL/AREA * \ISTTOKMARTE::TOP.HARDWARE.ATCA_2.IOP_9.CHANNEL_7.INP_INTEG"
+set def \ISTTOKMARTE::TOP.DIAGNOSTICS.MAGNETICS.MIRNOV.PROBE9
+put SIG "POL/AREA * \ISTTOKMARTE::TOP.HARDWARE.ATCA_2.IOP_9.CHANNEL_8.INP_INTEG"
+set def \ISTTOKMARTE::TOP.DIAGNOSTICS.MAGNETICS.MIRNOV.PROBE10
+put SIG "POL/AREA * \ISTTOKMARTE::TOP.HARDWARE.ATCA_2.IOP_9.CHANNEL_9.INP_INTEG"
+set def \ISTTOKMARTE::TOP.DIAGNOSTICS.MAGNETICS.MIRNOV.PROBE11
+put SIG "POL/AREA * \ISTTOKMARTE::TOP.HARDWARE.ATCA_2.IOP_9.CHANNEL_100.INP_INTEG"
+put SIG "POL/AREA * \ISTTOKMARTE::TOP.HARDWARE.ATCA_2.IOP_9.CHANNEL_10.INP_INTEG"
+set def \ISTTOKMARTE::TOP.DIAGNOSTICS.MAGNETICS.MIRNOV.PROBE12
+put SIG "POL/AREA * \ISTTOKMARTE::TOP.HARDWARE.ATCA_2.IOP_9.CHANNEL_11.INP_INTEG"
+write
+set def \isttokmarte::TOP.controls.matlab
+add node IpControl/usage=signal
+
+write
+close
+# set tree isttokmarte
+# create pulse 100
+exit
+quit
