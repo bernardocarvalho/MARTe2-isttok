@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """
 This script plots the MARTe2 ATCAIop samples stored in MDSplus
+caput -a ISTTOK:central:ATCAIOP1-EO 16 0 0 0 0  0 0 0 0  0 0 0 0  0 0 0 0
+caput -a ISTTOK:central:ATCAIOP1-WO 16 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
 """
 # import numpy as np
 

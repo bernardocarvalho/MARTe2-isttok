@@ -66,7 +66,7 @@ class MainWindow(QtWidgets.QMainWindow):
         glay.addWidget(pw1, 0, 0)
         # self.setCentralWidget(gr_wid)
         self.setCentralWidget(cw)
-        self.setWindowTitle('pyqtgraph ISTTOK')
+        self.setWindowTitle(f"pyqtgraph ISTTOK shot: {args.shot}")
 
         # p1 = gr_wid.addPlot(0,0, 1,1, title="raw data")
         start_ch = args.crange[0] - 1
@@ -86,7 +86,7 @@ class MainWindow(QtWidgets.QMainWindow):
         for i in range(start_ch, end_ch):
             dataAdc = self.mclient.adcRawData[i]
             pw1.plot(dataAdc[:args.maxpoints], pen=pg.mkPen(i, width=1),
-                     name="ch {}".format(i))
+                     name="ch {}".format(i + 1))
 
         pw2 = pg.PlotWidget(name='Integ data')
         pw2.addLegend()
@@ -100,7 +100,7 @@ class MainWindow(QtWidgets.QMainWindow):
             if (args.zero):
                 data -= data[0]  # / 2.0e6  # LSB * sec
             pw2.plot(data[:args.maxpoints], pen=pg.mkPen(i, width=1),
-                     name="ch {}".format(i))
+                     name="ch {}".format(i + 1))
 
         ylim = args.yrange
         if (ylim > 0.0):
@@ -117,7 +117,7 @@ class MainWindow(QtWidgets.QMainWindow):
             #, pen=(255,0,0), name="Red curve")
 
         # sub1 = gr_wid.addLayout(0,2, 1,2)
-        pw3 = pg.PlotWidget(name='Chop Trigg')
+        pw3 = pg.PlotWidget(name='Chop Trigger')
         pw3.setXLink('Plot1')
         data = self.mclient.choppTrigg
         pw3.plot(data[:args.maxpoints], pen=pg.mkPen(i, width=1))
