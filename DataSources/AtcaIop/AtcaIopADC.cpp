@@ -712,7 +712,6 @@ ErrorManagement::ErrorType AtcaIopADC::Execute(ExecutionInfo& info) {
 
     float64 t = counterAndTimer[1];
     t /= 1e6;
-    // Compute simulated Sinus Signals
     return err;
 }
 

@@ -58,7 +58,8 @@ namespace MARTe {
     const uint32 ATCA_IOP_MAX_ADC_CHANNELS = 16u;
 
 /**
- * @brief A DataSource which provides an analogue output interface to the ATCA IOP  boards.
+ * @brief A DataSource which provides an interface to config EO, WO parameters on 
+ * the ATCA IOP  board.
  * @details The configuration syntax is (names are only given as an example):
  *
  * <pre>
@@ -158,7 +159,6 @@ namespace MARTe {
              * @return true if all the mandatory parameters are correctly specified and if the specified optional parameters have valid values.
             uint32 synchCounter;
              */
-
             virtual bool Initialise(StructuredDataI & data);
 
 
@@ -168,9 +168,6 @@ namespace MARTe {
              *  are valid and consistent with the board parameters set during the initialisation phase.
              * In particular the following conditions shall be met:
              * - At least one triggering signal was requested by a GAM (with the property Trigger = 1)
-             * - All the DAC channels have type float32.
-            uint32 synchCounter;
-             * - The number of samples of all the DAC channels is exactly one.
              * @return true if all the parameters are valid and consistent with the board parameters and if the board can be successfully configured with
              *  these parameters.
              */
@@ -184,12 +181,11 @@ namespace MARTe {
             virtual bool Synchronise();
 
              /**
-              * @brief Set flag to write Eo, Wo Synchronisly
+              * @brief Set flag to write synchronously Eo, Wo parameters
               * @details This method 
               * It can be called within a 
               * MARTe message.
               */
-            //ErrorManagement::ErrorType Reset();
             ErrorManagement::ErrorType WriteEoWo();
 
 
@@ -209,10 +205,6 @@ namespace MARTe {
             int32 devFileDescriptor;
 
             uint32 synchCounter;
-            /**
-             * DAC values
-             */
-//            int32 dacValues[ATCA_IOP_N_DACs];
 
             /**
              * EO values Signal
@@ -226,11 +218,6 @@ namespace MARTe {
 
             bool eoWriteFlag;
 
-            /**
-             * The signal memory
-             */
-//            float32 *channelsMemory;
-
 
             /**
              * Filter to receive the RPC which allows to change the...
@@ -242,8 +229,10 @@ namespace MARTe {
              */
             bool triggerSet;
             
+            /**
+             *  Perform ioctl functions
+             */
             bool IoWriteEoWo();
-            //int32 SetDacReg(uint32 channel, float32 val) const;
 
     };
 }

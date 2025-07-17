@@ -54,7 +54,6 @@ namespace MARTe {
         DataSourceI(),
         MessageI() {
             devFileDescriptor = -1;
-            //numberOfDACsEnabled = 0u;
             //isMaster = 0u;
             deviceName = "";
             boardId = 0u;
@@ -62,7 +61,6 @@ namespace MARTe {
             uint32 n;
             synchCounter = 0u;
 
-            //channelsMemory = NULL_PTR(float32 *);
             eoValues = NULL_PTR(int32 *);
             woValues = NULL_PTR(float32 *);
             eoWriteFlag = false;
@@ -88,9 +86,6 @@ namespace MARTe {
         if (woValues != NULL_PTR(float32 *)) {
             delete[] woValues;
         }
-        //if (channelsMemory != NULL_PTR(float32 *)) {
-        //delete[] channelsMemory;
-        //}
     }
 
     bool AtcaIopConfig::AllocateMemory() {
@@ -114,14 +109,6 @@ namespace MARTe {
         else {
             ok = false;
         }
-        /*
-           bool ok = (signalIdx < (ATCA_IOP_MAX_DAC_CHANNELS));
-           if (ok) {
-           if (channelsMemory != NULL_PTR(float32 *)) {
-           signalAddress = &(channelsMemory[signalIdx]);
-           }
-           }
-           */
         return ok;
     }
 
@@ -313,7 +300,6 @@ namespace MARTe {
         ErrorManagement::ErrorType err;
         REPORT_ERROR(ErrorManagement::Information, "AtcaIopConfig::WriteEoWo. Got Message!");
 
-        //ret = err.ErrorsCleared();
         eoWriteFlag = true;
         return err;
     }
@@ -339,13 +325,12 @@ namespace MARTe {
             REPORT_ERROR(ErrorManagement::ParametersError, "Fail Write  wo0:%6.3f", woValues[0]);
             ok = false;
         }
-        /* Reset is done by fiber
+        /* Reset may be done by fiber... */
         rv = ioctl(devFileDescriptor, ATCA_PCIE_IOPT_RST_INTEG);
         if (rv ) {
-            REPORT_ERROR(ErrorManagement::ParametersError, "Fail reset Integrators");
+            REPORT_ERROR(ErrorManagement::ParametersError, "Fail reset Integrator regs");
             ok = false;
         }
-        */
         return ok;
     }
 
@@ -353,4 +338,4 @@ namespace MARTe {
     CLASS_METHOD_REGISTER(AtcaIopConfig, WriteEoWo)
 
 }
-//  vim: syntax=cpp ts=4 sw=4 sts=4 sr et
+//  vim: syntax=cpp ts=2 sw=2 sts=2 sr et

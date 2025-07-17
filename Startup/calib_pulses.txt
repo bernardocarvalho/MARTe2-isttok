@@ -63,3 +63,11 @@ caput -a ISTTOK:central:ATCAIOP1-EO 14 -393 -28 134 -45 -211 7 -157 -248 -469 -3
 New : ISTTOK:central:ATCAIOP1-WO 16 -0.051 -0.036 -0.289 -0.049 0.024 -0.209 -0.114 -0.09 -0.221 -0.006 -0.167 -0.157 0 0 0 0
 Pulse = 52706 : 4kA 4 semi cycles
 
+5 June  2025
+Pulse => 52960
+Connected IPLB probe to channel 13
+
+Pulse => 162
+➜  ~ caput -a ISTTOK:central:ATCAIOP1-EO 14 -395 -32 140 -5 -206 2 -157 -251 -467 -326 -113 -179 -272 -291
+➜  ~ caput -a ISTTOK:central:ATCAIOP1-WO 14 -0.001 0.022 0.131 0.017 0.092 -0.096 0.034 -0.090 -0.175 -0.006 -0.118 -0.029 0.077 69.493
+
