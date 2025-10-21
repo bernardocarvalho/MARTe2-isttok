@@ -35,7 +35,6 @@
 /*---------------------------------------------------------------------------*/
 /*                        Project header includes                            */
 /*---------------------------------------------------------------------------*/
-#include "BasicUART.h"
 #include "DataSourceI.h"
 #include "EmbeddedServiceMethodBinderI.h"
 #include "EventSem.h"
@@ -43,6 +42,7 @@
 #include "RegisteredMethodsMessageFilter.h"
 #include "SingleThreadService.h"
 
+#include "UART9Bit.h"
 /*---------------------------------------------------------------------------*/
 /*                           Class declaration                               */
 /*---------------------------------------------------------------------------*/
@@ -211,7 +211,7 @@ private:
   /**
    * The UART interface.
    */
-  BasicUART serial;
+  UART9Bit serial;
 
   /**
    * Timeout to wait for data to be available.

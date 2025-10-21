@@ -22,7 +22,7 @@
 #
 #############################################################
 
-OBJSX=UARTOutput.x
+OBJSX=UARTOutput.x UART9Bit.x
 
 PACKAGE=Components/DataSources
 
