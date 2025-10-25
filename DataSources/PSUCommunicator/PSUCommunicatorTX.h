@@ -197,6 +197,14 @@ public:
    * @return true if the writing of all the channels is successful.
    */
   virtual bool Synchronise();
+  /**
+   * @brief
+   * @details This method
+   * It can be called within a
+   * MARTe message.
+   */
+  ErrorManagement::ErrorType TriggerPSU();
+  ErrorManagement::ErrorType GoOnline();
 
 private:
   /**

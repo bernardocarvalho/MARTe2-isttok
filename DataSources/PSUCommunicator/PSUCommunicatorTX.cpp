@@ -433,6 +433,26 @@ bool PSUCommunicatorTX::Synchronise() {
      */
   return ok;
 }
+// Messages
+ErrorManagement::ErrorType PSUCommunicatorTX::TriggerPSU() {
+  ErrorManagement::ErrorType err;
+  REPORT_ERROR(ErrorManagement::Information,
+               "PSUCommunicatorTX::TriggerPSU. Got Message!");
+  communicatorOnlineStage = FA_COMMUNICATOR_ONLINE_DISCHARGE;
+
+  return err;
+}
+ErrorManagement::ErrorType PSUCommunicatorTX::GoOnline() {
+  ErrorManagement::ErrorType err;
+  REPORT_ERROR(ErrorManagement::Information,
+               "PSUCommunicatorTX::GoOnline. Got Message!");
+  communicatorOnlineStage = FA_COMMUNICATOR_ONLINE_WAIT_CODAC_TRIGGER;
+
+  return err;
+}
+
 CLASS_REGISTER(PSUCommunicatorTX, "1.0")
+CLASS_METHOD_REGISTER(PSUCommunicatorTX, TriggerPSU)
+CLASS_METHOD_REGISTER(PSUCommunicatorTX, GoOnline)
 } // namespace MARTe
   //  vim: syntax=cpp ts=2 sw=2 sts=2 sr et
