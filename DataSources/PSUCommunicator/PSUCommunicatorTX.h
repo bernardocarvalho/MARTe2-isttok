@@ -36,6 +36,7 @@
 /*---------------------------------------------------------------------------*/
 /*                        Project header includes                            */
 /*---------------------------------------------------------------------------*/
+#include "CLASSMETHODREGISTER.h"
 #include "DataSourceI.h"
 #include "EmbeddedServiceMethodBinderI.h"
 #include "EventSem.h"
@@ -53,7 +54,7 @@ namespace MARTe {
  * The number of signals
  */
 
-const uint32 UART_MAX_CHANNELS = 1u;
+const uint32 PSU_MAX_CHANNELS = 1u;
 
 /**
  * @brief A DataSource which provides an analogue output interface to the ATCA
@@ -70,7 +71,7 @@ const uint32 UART_MAX_CHANNELS = 1u;
  *     CurrentStep =
  *     PointOfZeroCurrent =
  *     Signals = {
- *         SerialOut = {
+ *         CurrentSignal= {
  *             Type = float32//Mandatory. Only type that is supported.
  *             OutputRange = 10.0 //Mandatory. The channel Module Output Range
  in volt.
@@ -92,6 +93,7 @@ const uint32 UART_MAX_CHANNELS = 1u;
 class PSUCommunicatorTX : public DataSourceI, public MessageI {
 public:
   CLASS_REGISTER_DECLARATION()
+  // AtcaIopConfig    ();
   /**
    * @brief Default constructor
    * @post
@@ -191,7 +193,7 @@ public:
   virtual bool SetConfiguredDatabase(StructuredDataI &data);
 
   /**
-   * @details Writes the value of all the DAC channels to the board.
+   * @details Writes the packet to the PSU
    * @return true if the writing of all the channels is successful.
    */
   virtual bool Synchronise();
@@ -201,14 +203,6 @@ private:
    * The board device name
    */
   StreamString portName;
-  /**
-   * The board identifier
-   */
-  uint32 boardId;
-  /**
-   * The board file descriptor
-   */
-  // int32 boardFileDescriptor;
   /**
    * The UART interface.
    */
@@ -224,30 +218,13 @@ private:
   uint32 timeout;
 
   /**
-   * DAC values
-   */
-  // int32 dacValues[ATCA_IOP_N_DACs];
-
-  /**
    * The signal memory
    */
-  float32 channelValue;
+  float32 currentValue;
   float32 currentStep;
   float32 pointOfZeroCurrent;
-  /**
-   * The DACs that are enabled
-   */
-  // bool dacEnabled[ATCA_IOP_MAX_DAC_CHANNELS];
-
-  /**
-   * The board individual channel output ranges
-   */
-  float32 outputRange;
-
-  /**
-   * The number of enabled DACs
-   */
-  uint32 numberOfDACsEnabled;
+  // Communicator online behaviour
+  uint32 communicatorOnlineStage;
 
   /**
    * Filter to receive the RPC which allows to change the...
@@ -258,9 +235,12 @@ private:
    * True if at least one trigger was set.
    */
   bool triggerSet;
+  char8 packet[2];
 
   // int32 SetDacReg(uint32 channel, float32 val) const;
-  bool CreateCurrentPacket(float32 current, char8 *packet);
+  bool SendMessage();
+  bool CommunicatorOnline();
+  bool CreateCurrentPacket(); // float32 current, char8 *packet);
 };
 } // namespace MARTe
 

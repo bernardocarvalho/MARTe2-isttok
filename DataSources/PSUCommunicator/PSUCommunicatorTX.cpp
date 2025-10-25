@@ -54,19 +54,14 @@ const float32 DAC_RANGE = 20.0;
 //  const float32 ATCA_IOP_MAX_DAC_RANGE = 20.0;
 PSUCommunicatorTX::PSUCommunicatorTX() : DataSourceI(), MessageI() {
   // boardFileDescriptor = -1;
-  // numberOfDACsEnabled = 0u;
-  // isMaster = 0u;
-  // deviceName = "";
-  // boardId = 2u;
   triggerSet = false;
   uint32 n;
   // for (n = 0u; n < ATCA_IOP_MAX_DAC_CHANNELS; n++) {
   // dacEnabled[n] = false;
-  outputRange = DAC_RANGE;
   //}
-
+  communicatorOnlineStage = FA_COMMUNICATOR_ONLINE_IDLE;
   // channelsMemory = NULL_PTR(float32 *);
-  channelValue = 0.0; // NULL_PTR(float32 *);
+  currentValue = 0.0; // NULL_PTR(float32 *);
   currentStep = 0.0;
   pointOfZeroCurrent = 0.0;
 
@@ -88,11 +83,6 @@ PSUCommunicatorTX::~PSUCommunicatorTX() {
   serial.Close();
   REPORT_ERROR_PARAMETERS(ErrorManagement::Information, "Close  %s OK.",
                           portName);
-  /*
-     if (channelsMemory != NULL_PTR(float32 *)) {
-     delete[] channelsMemory;
-     }
-     */
 }
 
 bool PSUCommunicatorTX::AllocateMemory() { return true; }
@@ -104,11 +94,9 @@ uint32 PSUCommunicatorTX::GetNumberOfMemoryBuffers() { return 1u; }
 bool PSUCommunicatorTX::GetSignalMemoryBuffer(const uint32 signalIdx,
                                               const uint32 bufferIdx,
                                               void *&signalAddress) {
-  bool ok = (signalIdx < (UART_MAX_CHANNELS));
+  bool ok = (signalIdx < (PSU_MAX_CHANNELS));
   if (ok) {
-    // if (channelsMemory != NULL_PTR(float32 *)) {
-    signalAddress = &channelValue;
-    //}
+    signalAddress = &currentValue;
   }
   return ok;
 }
@@ -134,6 +122,7 @@ const char8 *PSUCommunicatorTX::GetBrokerName(StructuredDataI &data,
   }
   return brokerName;
 }
+
 bool PSUCommunicatorTX::GetInputBrokers(ReferenceContainer &inputBrokers,
                                         const char8 *const functionName,
                                         void *const gamMemPtr) {
@@ -281,62 +270,6 @@ bool PSUCommunicatorTX::Initialise(StructuredDataI &data) {
                             "The port %s Not opened.", portName);
   }
 
-  // Get individual signal parameters
-  uint32 i = 0u;
-  if (ok) {
-    ok = data.MoveRelative("Signals");
-    if (!ok) {
-      REPORT_ERROR(ErrorManagement::ParametersError,
-                   "Could not move to the Signals section");
-    }
-    // Do not allow to add signals in run-time
-    if (ok) {
-      ok = signalsDatabase.MoveRelative("Signals");
-    }
-    if (ok) {
-      ok = signalsDatabase.Write("Locked", 1u);
-    }
-    if (ok) {
-      ok = signalsDatabase.MoveToAncestor(1u);
-    }
-    //      while ((i < ATCA_IOP_MAX_DAC_CHANNELS) && (ok)) {
-    if (data.MoveRelative(data.GetChildName(0))) {
-      // uint32 channelId;
-      float64 range;
-      ok = data.Read("OutputRange", range);
-      if (ok) {
-        // if (data.Read("OutputRange", range)) {
-        ok = (range > 0.0) && (range <= DAC_RANGE);
-        if (!ok) {
-          REPORT_ERROR(ErrorManagement::ParametersError,
-                       "Invalid OutputRange specified.");
-        }
-        if (ok) {
-          outputRange = range;
-          REPORT_ERROR_PARAMETERS(ErrorManagement::Information,
-                                  " Parameter DAC Output Range %f", range);
-          // dacEnabled[i] = true;
-          // numberOfDACsEnabled++;
-        }
-      } else {
-        REPORT_ERROR(ErrorManagement::ParametersError,
-                     "The OutputRange shall be specified.");
-      }
-      if (ok) {
-        ok = data.MoveToAncestor(1u);
-      }
-    }
-  }
-  if (ok) {
-    ok = data.MoveToAncestor(1u);
-    if (!ok) {
-      REPORT_ERROR(ErrorManagement::ParametersError,
-                   "Could not move to the parent section");
-    }
-  }
-
-  // REPORT_ERROR_PARAMETERS(ErrorManagement::Information, "numberOfDACsEnabled
-  // %d", numberOfDACsEnabled);
   return ok;
 }
 
@@ -352,12 +285,11 @@ bool PSUCommunicatorTX::SetConfiguredDatabase(StructuredDataI &data) {
                  "At least one Trigger signal shall be set.");
   }
   if (ok) {
-    // for (i = 0u; (i < numberOfDACsEnabled) && (ok); i++) {
     ok = (GetSignalType(0u) == Float32Bit);
     //}
     if (!ok) {
       REPORT_ERROR(ErrorManagement::ParametersError,
-                   "All the DAC signals shall be of type Float32Bit");
+                   "The PSU current signal shall be of type Float32Bit");
     }
   }
 
@@ -385,10 +317,12 @@ bool PSUCommunicatorTX::SetConfiguredDatabase(StructuredDataI &data) {
 }
 
 // Create/Decode current packet
-bool PSUCommunicatorTX::CreateCurrentPacket(float32 current, char8 *packet) {
+bool PSUCommunicatorTX::CreateCurrentPacket() {
+  bool ok = true;
 
   // Calculate the point in the scale of the current
-  int16 pointOfCurrent = (int16)(pointOfZeroCurrent + current / currentStep);
+  int16 pointOfCurrent =
+      (int16)(pointOfZeroCurrent + currentValue / currentStep);
 
   // Saturate current
   if (pointOfCurrent < FA_SCALE_MIN)
@@ -402,33 +336,96 @@ bool PSUCommunicatorTX::CreateCurrentPacket(float32 current, char8 *packet) {
   packet[0] = (char8)(0x0000 | ((nc & 0x03C0) >> 5) | ((pc & 0x0007) << 5));
   packet[1] = (char8)(0x0001 | ((pc & 0x03F8) >> 2));
 
-  return true;
+  return ok;
 }
 
+bool PSUCommunicatorTX::SendMessage() {
+  bool ok = true;
+  serial.Write(packet, 2);
+  return ok;
+}
+bool PSUCommunicatorTX::CommunicatorOnline() {
+  bool ok = true;
+  switch (communicatorOnlineStage) {
+  case FA_COMMUNICATOR_ONLINE_IDLE:
+    // Log the entry on this stage
+    // if(this->communicatorOnlineIdleCount++ == 0)
+    // AssertErrorCondition(Information, "[FACom] COMMUNICATOR_ONLINE_IDLE");
+    break;
+  // Wait for the CODAC trigger
+  case FA_COMMUNICATOR_ONLINE_WAIT_CODAC_TRIGGER:
+
+    // Log the entry on this stage
+    // if(this->communicatorOnlineWaitTriggerCount++ == 0)
+    // AssertErrorCondition(Information, "[FACom]
+    // COMMUNICATOR_ONLINE_WAIT_CODAC_TRIGGER");
+
+    // if(IsTriggered)
+    //{
+    //  Send Start Operation message
+    // this->SendMessage(FA_STARTOP_MESSAGE_1, FA_STARTOP_MESSAGE_2);
+    packet[0] = FA_STARTOP_MESSAGE_1;
+    packet[1] = FA_STARTOP_MESSAGE_2;
+    SendMessage();
+
+    // Increase attempts counter
+    // this->communicatorOnlineStartOperationAttempts++;
+
+    // Change online state
+    communicatorOnlineStage = FA_COMMUNICATOR_ONLINE_DISCHARGE;
+    //	this->communicatorOnlineWaitTriggerCount = 0;
+    //}
+
+    break;
+  case FA_COMMUNICATOR_ONLINE_DISCHARGE:
+    /*
+                                if(PlasmaEnded)
+                                {
+                                        this->communicatorOnlineStage =
+       FA_COMMUNICATOR_ONLINE_STOP_OPERATION;
+                                        this->communicatorOnlineDischargeCount =
+       0; break;
+                                }
+        */
+    // CreateCurrentPacket(CurrentToSendCopy, packet1, packet2);
+    CreateCurrentPacket();
+    ok = SendMessage();
+    communicatorOnlineStage = FA_COMMUNICATOR_ONLINE_STOP_OPERATION;
+    break;
+  case FA_COMMUNICATOR_ONLINE_STOP_OPERATION:
+    packet[0] = FA_STARTOP_MESSAGE_1;
+    packet[1] = FA_STARTOP_MESSAGE_2;
+    ok = SendMessage();
+    break;
+  case FA_COMMUNICATOR_ONLINE_ERROR:
+
+    // AssertErrorCondition(InitialisationError, "[FACom]::%s Power supplies
+    // timeout: after %d attemps, FA_COMMUNICATOR_ONLINE_ERROR, RETURN FALSE",
+    // this->Name(), this->communicatorOnlineStopOperationAttempts);
+
+    ok = false;
+
+    break;
+
+  default:
+    break;
+  }
+  return ok;
+}
 bool PSUCommunicatorTX::Synchronise() {
   uint32 i;
   int32 w = 24;
   bool ok = true;
-  char8 text[] = "ola";
-  // if (channelsMemory != NULL_PTR(float32 *)) {
+  // char8 text[] = "ola";
+  //  if (channelsMemory != NULL_PTR(float32 *)) {
 
   //                value = channelsMemory[0] / DAC_RANGE;
-  // for (i = 0u; (i < numberOfDACsEnabled ) && (ok); i++) {
-  int32 ser_value = channelValue / outputRange * 1000000.0;
   REPORT_ERROR_PARAMETERS(ErrorManagement::Information,
-                          "Synchronise called. value: %f, %d", channelValue,
-                          ser_value);
+                          "Synchronise called. value: %f", currentValue);
   // w = SetDacReg(i, value);
-  char8 *data = reinterpret_cast<char8 *>(&ser_value);
-  serial.Write(data, sizeof(int32));
+  // char8 *data = reinterpret_cast<char8 *>(&ser_value);
+  // serial.Write(data, sizeof(int32));
   // serial.Write(text, 4);
-  // write(boardFileDescriptor,  &w, 4);
-  //                 value = channelsMemory[1] / DAC_RANGE;
-  // value = channelsMemory[1] / DAC_RANGE * pow(2,17);
-  //                 w = SetDacReg(1, value);
-  // w = 0x000FFFFF & static_cast<uint32>(value);
-  //               write(boardFileDescriptor,  &w, 4);
-  // REPORT_ERROR(ErrorManagement::Information, " Writing DAC 0 0x%x", w);
   /*
 
      w = dacValues[i];
