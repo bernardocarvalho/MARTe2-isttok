@@ -55,10 +55,7 @@ const float32 DAC_RANGE = 20.0;
 PSUCommunicatorTX::PSUCommunicatorTX() : DataSourceI(), MessageI() {
   // boardFileDescriptor = -1;
   triggerSet = false;
-  uint32 n;
-  // for (n = 0u; n < ATCA_IOP_MAX_DAC_CHANNELS; n++) {
-  // dacEnabled[n] = false;
-  //}
+  isTriggered = false;
   communicatorOnlineStage = FA_COMMUNICATOR_ONLINE_IDLE;
   // channelsMemory = NULL_PTR(float32 *);
   currentValue = 0.0; // NULL_PTR(float32 *);
@@ -335,15 +332,26 @@ bool PSUCommunicatorTX::CreateCurrentPacket() {
   uint16 nc = ~pc;
   packet[0] = (char8)(0x0000 | ((nc & 0x03C0) >> 5) | ((pc & 0x0007) << 5));
   packet[1] = (char8)(0x0001 | ((pc & 0x03F8) >> 2));
+  nc = (uint16)packet[1];
+  nc <<= 8;
+  nc &= 0xFF00;
+  nc |= packet[0];
+  REPORT_ERROR_PARAMETERS(ErrorManagement::Information, "CurrentPacket %d 0x%x",
+                          pointOfCurrent, nc); // packet[0]);
+  // packet[1]);
 
   return ok;
 }
 
 bool PSUCommunicatorTX::SendMessage() {
   bool ok = true;
+  // REPORT_ERROR_PARAMETERS(ErrorManagement::Information, "SendMessage  %d %d",
+  //                         packet[0], packet[1]);
+  //  packet[0], packet[1]);
   serial.Write(packet, 2);
   return ok;
 }
+
 bool PSUCommunicatorTX::CommunicatorOnline() {
   bool ok = true;
   switch (communicatorOnlineStage) {
@@ -351,6 +359,7 @@ bool PSUCommunicatorTX::CommunicatorOnline() {
     // Log the entry on this stage
     // if(this->communicatorOnlineIdleCount++ == 0)
     // AssertErrorCondition(Information, "[FACom] COMMUNICATOR_ONLINE_IDLE");
+    isTriggered = false;
     break;
   // Wait for the CODAC trigger
   case FA_COMMUNICATOR_ONLINE_WAIT_CODAC_TRIGGER:
@@ -360,21 +369,20 @@ bool PSUCommunicatorTX::CommunicatorOnline() {
     // AssertErrorCondition(Information, "[FACom]
     // COMMUNICATOR_ONLINE_WAIT_CODAC_TRIGGER");
 
-    // if(IsTriggered)
-    //{
-    //  Send Start Operation message
-    // this->SendMessage(FA_STARTOP_MESSAGE_1, FA_STARTOP_MESSAGE_2);
-    packet[0] = FA_STARTOP_MESSAGE_1;
-    packet[1] = FA_STARTOP_MESSAGE_2;
-    SendMessage();
+    if (isTriggered) {
+      //  Send Start Operation message
+      // this->SendMessage(FA_STARTOP_MESSAGE_1, FA_STARTOP_MESSAGE_2);
+      packet[0] = FA_STARTOP_MESSAGE_1;
+      packet[1] = FA_STARTOP_MESSAGE_2;
+      SendMessage();
 
-    // Increase attempts counter
-    // this->communicatorOnlineStartOperationAttempts++;
+      // Increase attempts counter
+      // this->communicatorOnlineStartOperationAttempts++;
 
-    // Change online state
-    communicatorOnlineStage = FA_COMMUNICATOR_ONLINE_DISCHARGE;
-    //	this->communicatorOnlineWaitTriggerCount = 0;
-    //}
+      // Change online state
+      communicatorOnlineStage = FA_COMMUNICATOR_ONLINE_DISCHARGE;
+      //	this->communicatorOnlineWaitTriggerCount = 0;
+    }
 
     break;
   case FA_COMMUNICATOR_ONLINE_DISCHARGE:
@@ -390,12 +398,13 @@ bool PSUCommunicatorTX::CommunicatorOnline() {
     // CreateCurrentPacket(CurrentToSendCopy, packet1, packet2);
     CreateCurrentPacket();
     ok = SendMessage();
-    communicatorOnlineStage = FA_COMMUNICATOR_ONLINE_STOP_OPERATION;
+    // communicatorOnlineStage = FA_COMMUNICATOR_ONLINE_STOP_OPERATION;
     break;
   case FA_COMMUNICATOR_ONLINE_STOP_OPERATION:
     packet[0] = FA_STARTOP_MESSAGE_1;
     packet[1] = FA_STARTOP_MESSAGE_2;
     ok = SendMessage();
+    communicatorOnlineStage = FA_COMMUNICATOR_ONLINE_IDLE;
     break;
   case FA_COMMUNICATOR_ONLINE_ERROR:
 
@@ -420,9 +429,9 @@ bool PSUCommunicatorTX::Synchronise() {
   //  if (channelsMemory != NULL_PTR(float32 *)) {
 
   //                value = channelsMemory[0] / DAC_RANGE;
-  REPORT_ERROR_PARAMETERS(ErrorManagement::Information,
-                          "Synchronise called. value: %f", currentValue);
-  // w = SetDacReg(i, value);
+  CommunicatorOnline();
+  // REPORT_ERROR_PARAMETERS(ErrorManagement::Information,
+  //                         "Synchronise called. value: %f", currentValue);
   // char8 *data = reinterpret_cast<char8 *>(&ser_value);
   // serial.Write(data, sizeof(int32));
   // serial.Write(text, 4);
@@ -438,7 +447,8 @@ ErrorManagement::ErrorType PSUCommunicatorTX::GoOnlineIdle() {
   ErrorManagement::ErrorType err;
   REPORT_ERROR(ErrorManagement::Information,
                "PSUCommunicatorTX::GoOnlineIdle. Got Message!");
-  communicatorOnlineStage = FA_COMMUNICATOR_ONLINE_IDLE;
+  communicatorOnlineStage = FA_COMMUNICATOR_ONLINE_STOP_OPERATION;
+  // communicatorOnlineStage = FA_COMMUNICATOR_ONLINE_IDLE;
 
   return err;
 }
@@ -451,10 +461,12 @@ ErrorManagement::ErrorType PSUCommunicatorTX::GoWaitTrigger() {
   return err;
 }
 ErrorManagement::ErrorType PSUCommunicatorTX::TriggerPSU() {
+  isTriggered = true;
+
   ErrorManagement::ErrorType err;
   REPORT_ERROR(ErrorManagement::Information,
                "PSUCommunicatorTX::TriggerPSU. Got Message!");
-  communicatorOnlineStage = FA_COMMUNICATOR_ONLINE_DISCHARGE;
+  // communicatorOnlineStage = FA_COMMUNICATOR_ONLINE_DISCHARGE;
 
   return err;
 }

@@ -234,6 +234,7 @@ private:
   float32 pointOfZeroCurrent;
   // Communicator online behaviour
   uint32 communicatorOnlineStage;
+  bool isTriggered;
 
   /**
    * Filter to receive the RPC which allows to change the...
