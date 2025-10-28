@@ -203,8 +203,9 @@ public:
    * It can be called within a
    * MARTe message.
    */
+  ErrorManagement::ErrorType GoOnlineIdle();
+  ErrorManagement::ErrorType GoWaitTrigger();
   ErrorManagement::ErrorType TriggerPSU();
-  ErrorManagement::ErrorType GoOnline();
 
 private:
   /**
