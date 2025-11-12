@@ -345,8 +345,11 @@ bool PSUCommunicatorTX::CreateCurrentPacket() {
 
 bool PSUCommunicatorTX::SendMessage() {
   bool ok = true;
-  // REPORT_ERROR_PARAMETERS(ErrorManagement::Information, "SendMessage  %d %d",
-  //                         packet[0], packet[1]);
+  uint16 uval;
+  memcpy(&uval, packet, 2);
+  REPORT_ERROR_PARAMETERS(ErrorManagement::Information, "SendMessage  0x%",
+                          uval);
+  //                          (uint16)packet[0], (uint16)packet[1]);
   //  packet[0], packet[1]);
   serial.Write(packet, 2);
   return ok;
