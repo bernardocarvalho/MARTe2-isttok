@@ -17,12 +17,30 @@
 #include "PSUMessages.h"
 
 uint8_t packet[2];
+uint8_t packetR[4];
 
 int serial_port;
+bool isStarted;
+
+void InterpretMessage();
+
+bool DecodeCurrentPacket() { // float &current, unsigned char packet1, unsigned
+                             // char packet2){
+  // Validate packets
+  unsigned char validation = (packetR[1] & 0xF0) ^ ((packetR[0] & 0x1E) << 3);
+  if (validation != 0xF0) {
+    printf("WrongMessagesReceived\n");
+    return false;
+  }
+  short pointOfCurrent = (short)((((unsigned short)packetR[0] & 0x00E0) >> 5) |
+                                 (((unsigned short)packetR[1] & 0x00FE) << 2));
+  printf("pointOfCurrenti = %d\n", pointOfCurrent);
+  return true;
+}
 
 bool CreateCurrentPacket(unsigned int current) {
   bool ok = true;
-
+  // Zero current 510
   // Calculate the point in the scale of the current
   int16_t pointOfCurrent = current;
 
@@ -37,10 +55,12 @@ bool CreateCurrentPacket(unsigned int current) {
   uint16_t nc = ~pc;
   packet[0] = (uint8_t)(0x0000 | ((nc & 0x03C0) >> 5) | ((pc & 0x0007) << 5));
   packet[1] = (uint8_t)(0x0001 | ((pc & 0x03F8) >> 2));
+  /*
   nc = (uint16_t)packet[1];
   nc <<= 8;
   nc &= 0xFF00;
   nc |= packet[0];
+  */
   printf("Current: %d, Packet 0x%02X 0x%02X\n", current, packet[0], packet[1]);
 
   return EXIT_SUCCESS;
@@ -48,18 +68,18 @@ bool CreateCurrentPacket(unsigned int current) {
 
 int read_msg() {
   // Allocate memory for read buffer, set size according to your needs
-  char read_buf[4];
+  // char read_buf[4];
 
   // Normally you wouldn't do this memset() call, but since we will just receive
   // call printf() easily.
-  memset(&read_buf, '\0', sizeof(read_buf));
+  memset(&packetR, '\0', sizeof(packetR));
   // wait 1 ms
   usleep(1000);
 
   // Read bytes. The behaviour of read() (e.g. does it block?,
   // how long does it block for?) depends on the configuration
   // settings above, specifically VMIN and VTIME
-  int num_bytes = read(serial_port, &read_buf, sizeof(read_buf));
+  int num_bytes = read(serial_port, &packetR, sizeof(packetR));
 
   // n is the number of bytes read. n may be 0 if no bytes were received, and
   // can also be -1 to signal an error.
@@ -72,12 +92,43 @@ int read_msg() {
   // (in that case, don't try and print it to the screen like this!)
   printf("Read %i bytes. \t", num_bytes);
   for (int i = 0; i < num_bytes; i++) {
-    unsigned int val = read_buf[i] & 0xFF;
+    unsigned int val = packetR[i] & 0xFF;
     printf("%i: 0x%02X \t", i, val);
     // printf("%i: %u \n", i, val);
   }
   printf("\n");
+  if (num_bytes == 2)
+    InterpretMessage();
   return EXIT_SUCCESS;
+}
+void InterpretMessage() {
+  // Operation Started message
+  if ((packetR[0] == FA_STARTED_MESSAGE_1) &&
+      (packetR[1] == FA_STARTED_MESSAGE_2)) {
+    printf("isStarted\n");
+    isStarted = true;
+    return;
+  }
+  // Operation Stopped message
+  if ((packetR[0] == FA_STOPPED_MESSAGE_1) &&
+      (packetR[1] == FA_STOPPED_MESSAGE_2)) {
+    printf("isStopped\n");
+    return;
+  }
+  // Stop Error message
+  if ((packetR[0] == FA_STOP_ERROR_MESSAGE_1) &&
+      (packetR[1] == FA_STOP_ERROR_MESSAGE_2)) {
+    printf("Stop Error message\n");
+    return;
+  }
+  // Communication Error message
+  if ((packetR[0] == FA_COMM_ERROR_MESSAGE_1) &&
+      (packetR[1] == FA_COMM_ERROR_MESSAGE_2)) {
+    printf("Communication Error message\n");
+    return;
+  }
+  // printf("Other message\n");
+  DecodeCurrentPacket();
 }
 
 int main() {
@@ -115,6 +166,8 @@ int main() {
   tty.c_cflag |=
       CREAD | CLOCAL; // Turn on READ & ignore ctrl lines (CLOCAL = 1)
 
+  //   http://unixwiz.net/techtips/termios-vmin-vtime.html
+  //    ICANON bit is turned off, a "raw mode" is selected
   tty.c_lflag &= ~ICANON;
   tty.c_lflag &= ~ECHO;   // Disable echo
   tty.c_lflag &= ~ECHOE;  // Disable erasure
@@ -134,9 +187,9 @@ int main() {
   // PRESENT ON LINUX) tty.c_oflag &= ~ONOEOT; // Prevent removal of C-d chars
   // (0x004) in output (NOT PRESENT ON LINUX)
 
-  tty.c_cc[VTIME] = 10; // Wait for up to 1s (10 deciseconds), returning as soon
-                        // as any data is received.
-  tty.c_cc[VMIN] = 0;
+  tty.c_cc[VTIME] = 1; // Wait for up to 1s (10 deciseconds), returning as soon
+                       // as any data is received.
+  tty.c_cc[VMIN] = 2;
 
   // Set in/out baud rate
   cfsetispeed(&tty, baud_rate);
@@ -149,24 +202,32 @@ int main() {
   }
   // clear input port
   read_msg();
+  isStarted = false;
   // Write to serial port
   // unsigned char msg[] = {FA_STARTOP_MESSAGE_1, 0xFF};
   packet[0] = FA_STARTOP_MESSAGE_1;
   packet[1] = FA_STARTOP_MESSAGE_2;
   write(serial_port, packet, sizeof(packet));
-  printf("Sent : %lu bytes\n", sizeof(packet));
+  printf("Sent Start: %lu bytes\n", sizeof(packet));
   read_msg();
-  CreateCurrentPacket(100);
-  write(serial_port, packet, sizeof(packet));
-  printf("Sent : %lu bytes\n", sizeof(packet));
-  read_msg();
-
-  // Halting the execution for 100000 Microseconds (0.1 seconds)
-  usleep(100000);
+  if (isStarted) {
+    usleep(1000);
+    for (int i = 0; i < 10; i++) {
+      CreateCurrentPacket(500 + i);
+      write(serial_port, packet, sizeof(packet));
+      usleep(10);
+      // printf("Sent : %lu bytes\n", sizeof(packet));
+      read_msg();
+      // Halting the execution for 100000 Microseconds (0.1 seconds)
+      usleep(10000);
+    }
+  }
   packet[0] = FA_STOPOP_MESSAGE_1;
   packet[1] = FA_STOPOP_MESSAGE_2;
   write(serial_port, packet, sizeof(packet));
-  printf("Sent : %lu bytes\n", sizeof(packet));
+  printf("Sent  Stop: %lu bytes\n", sizeof(packet));
+  // read_msg();
+  usleep(1000);
   read_msg();
   close(serial_port);
   return 0; // success
